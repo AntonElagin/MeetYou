@@ -38,19 +38,15 @@ class http_session : public std::enable_shared_from_this<http_session>
             virtual void operator()() = 0;
         };
 
-        http_session& self_;
-        std::vector<std::unique_ptr<work>> items_;
+        http_session& self;
+        std::vector<std::unique_ptr<work>> items;
 
     public:
         explicit
-        queue(http_session& self);
+        queue(http_session& _self);
 
         // Returns `true` if we have reached the queue limit
-        bool
-        is_full() const
-        {
-            return items_.size() >= limit;
-        }
+        bool is_full() const;
 
         // Called when a message finishes sending
         // Returns `true` if the caller should initiate a read
@@ -58,16 +54,15 @@ class http_session : public std::enable_shared_from_this<http_session>
 
         // Called by the HTTP handler to send a response.
         template<bool isRequest, class Body, class Fields>
-        void operator()(http::message<isRequest, Body, Fields>&& msg);
+        void operator()(http::message<isRequest, Body, Fields>&& msg_);
     };
 
-    beast::tcp_stream stream_;
-    beast::flat_buffer buffer_;
-    queue queue_;
-
+    beast::tcp_stream stream;
+    beast::flat_buffer buffer;
+    queue queue;
     // The parser is stored in an optional container so we can
     // construct it from scratch it at the beginning of each new message.
-    boost::optional<http::request_parser<http::string_body>> parser_;
+    boost::optional<http::request_parser<http::string_body>> parser;
 
 public:
     // Take ownership of the socket
@@ -88,8 +83,6 @@ private:
     on_write(bool close, beast::error_code ec, std::size_t bytes_transferred);
 
     void do_close();
-
-
 
 //------------------------------------------------------------------------------
     template<class Body, class Allocator, class Send>

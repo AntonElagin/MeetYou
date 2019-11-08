@@ -4,15 +4,15 @@
 
 #include "listener.h"
 
-listener::listener(net::io_context &ioc, tcp::endpoint endpoint)
-        : ioc_(ioc)
-        , acceptor_(net::make_strand(ioc))
+listener::listener(net::io_context &_ioc, tcp::endpoint _endpoint)
+        : ioc(_ioc)
+        , acceptor(net::make_strand(_ioc))
 
 {
     beast::error_code ec;
 
     // Open the acceptor
-    acceptor_.open(endpoint.protocol(), ec);
+    acceptor.open(_endpoint.protocol(), ec);
     if(ec)
     {
         fail(ec, "open");
@@ -20,7 +20,7 @@ listener::listener(net::io_context &ioc, tcp::endpoint endpoint)
     }
 
     // Allow address reuse
-    acceptor_.set_option(net::socket_base::reuse_address(true), ec);
+    acceptor.set_option(net::socket_base::reuse_address(true), ec);
     if(ec)
     {
         fail(ec, "set_option");
@@ -28,7 +28,7 @@ listener::listener(net::io_context &ioc, tcp::endpoint endpoint)
     }
 
     // Bind to the server address
-    acceptor_.bind(endpoint, ec);
+    acceptor.bind(_endpoint, ec);
     if(ec)
     {
         fail(ec, "bind");
@@ -36,7 +36,7 @@ listener::listener(net::io_context &ioc, tcp::endpoint endpoint)
     }
 
     // Start listening for connections
-    acceptor_.listen(
+    acceptor.listen(
             net::socket_base::max_listen_connections, ec);
     if(ec)
     {
@@ -53,8 +53,8 @@ void
 listener::do_accept()
 {
     // The new connection gets its own strand
-    acceptor_.async_accept(
-            net::make_strand(ioc_),
+    acceptor.async_accept(
+            net::make_strand(ioc),
             beast::bind_front_handler(
                     &listener::on_accept,
                     shared_from_this()));

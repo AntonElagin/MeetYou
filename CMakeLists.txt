@@ -36,7 +36,7 @@ add_executable(ticker main.cpp
         http_session.cpp
         http_session.h
         websocket_session.cpp
-        websocket_session.h runner.cpp runner.h)
+        websocket_session.h runner.cpp runner.h request.cpp request.h)
 
 target_link_libraries(ticker ${Boost_LIBRARIES} pthread
         ${LIBMYSQLCLIENT_INCLUDE_DIRS}

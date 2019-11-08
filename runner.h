@@ -31,7 +31,6 @@ class runner {
     boost::asio::ip::address const address;
     unsigned short const port;
     int const threads;
-    std::string doc_root;
 
 public:
     void run();
