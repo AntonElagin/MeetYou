@@ -3,8 +3,8 @@ project(techProject)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(BOOST_INCLUDEDIR "/media/anton/files/boost_1_71_0")
-set(BOOST_LIBRARYDIR "/media/anton/files/boost_1_71_0/stage/lib")
+set(BOOST_INCLUDEDIR "/home/anton/apps/boost_1_71_0")
+set(BOOST_LIBRARYDIR "/home/anton/apps/boost_1_71_0/stage/lib")
 set (Boost_NO_SYSTEM_PATHS ON)
 set (Boost_USE_MULTITHREADED ON)
 set (Boost_USE_STATIC_LIBS ON)
@@ -28,13 +28,17 @@ endforeach()
 link_directories(${LIBMYSQLCLIENT_LIBRARY_DIRS})
 
 
-add_executable(ticker main.cpp)
+add_executable(ticker main.cpp
+        listener.cpp
+        listener.h
+        fail.cpp
+        fail.h
+        http_session.cpp
+        http_session.h
+        websocket_session.cpp
+        websocket_session.h runner.cpp runner.h)
+
 target_link_libraries(ticker ${Boost_LIBRARIES} pthread
         ${LIBMYSQLCLIENT_INCLUDE_DIRS}
         ${LIBMYSQLCLIENT_LIBRARIES})
-
-#target_include_directories(ticker PRIVATE ${LIBMYSQLCLIENT_INCLUDE_DIRS})
-#target_link_libraries(ticker PRIVATE ${LIBMYSQLCLIENT_LIBRARIES})
-
-
 
