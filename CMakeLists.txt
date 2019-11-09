@@ -28,7 +28,7 @@ endforeach()
 link_directories(${LIBMYSQLCLIENT_LIBRARY_DIRS})
 
 
-add_executable(ticker main.cpp
+add_executable(runServer main.cpp
         listener.cpp
         listener.h
         fail.cpp
@@ -36,9 +36,42 @@ add_executable(ticker main.cpp
         http_session.cpp
         http_session.h
         websocket_session.cpp
-        websocket_session.h runner.cpp runner.h request.cpp request.h)
+        websocket_session.h runner.cpp runner.h request.cpp request.h tests/gmock/listener.h)
 
-target_link_libraries(ticker ${Boost_LIBRARIES} pthread
+target_link_libraries(runServer ${Boost_LIBRARIES} pthread
         ${LIBMYSQLCLIENT_INCLUDE_DIRS}
         ${LIBMYSQLCLIENT_LIBRARIES})
+
+#find_package(GTest REQUIRED)
+#include_directories(${GTEST_INCLUDE_DIRS})
+
+#find_package(googlegmock REQUIRED)
+include_directories(${GMOCK_INCLUDE_DIRS})
+set (GMOCK_DIR "/usr/src/googletest")
+add_subdirectory(${GMOCK_DIR} ${CMAKE_BINARY_DIR}/googlegmock)
+include_directories(SYSTEM ${GMOCK_DIR}/include ${GMOCK_DIR}/gtest/include)
+# Link runTests with what we want to test and the GTest and pthread library
+add_executable(runTests tests/gtest_main.cpp
+        tests/gmock/http_session.h
+        listener.cpp
+        listener.h
+        fail.cpp
+        fail.h
+        http_session.cpp
+        http_session.h
+        websocket_session.cpp
+        websocket_session.h
+        runner.cpp
+        runner.h
+        request.cpp
+        request.h
+        tests/test_gmock.cpp
+        tests/gmock/listener.h)
+
+target_link_libraries(runTests
+#        ${GTEST_LIBRARIES} pthread
+        ${Boost_LIBRARIES} pthread
+        ${LIBMYSQLCLIENT_INCLUDE_DIRS}
+        ${LIBMYSQLCLIENT_LIBRARIES}
+        gmock_main Sub)
 

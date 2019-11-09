@@ -1,95 +1,76 @@
-//
-// Created by anton on 08.11.2019.
-//
-
 #ifndef TECHPROJECT_HTTP_SESSION_H
 #define TECHPROJECT_HTTP_SESSION_H
 
-#include <boost/beast.hpp>
 #include <boost/asio.hpp>
-//#include "fail.h"
+#include <boost/beast.hpp>
 #include "websocket_session.h"
 
-namespace beast = boost::beast;                 // from <boost/beast.hpp>
-namespace http = boost::beast::http;                   // from <boost/beast/http.hpp>
-namespace websocket = boost::beast::websocket;         // from <boost/beast/websocket.hpp>
-namespace net = boost::asio;                    // from <boost/asio.hpp>
+namespace beast = boost::beast;
+namespace http = boost::beast::http;
+namespace websocket =
+    boost::beast::websocket;
+namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
 
+struct work {
+    virtual ~work() = default;
+    virtual void operator()() = 0;
+};
 
 
-
-// Handles an HTTP server connection
-class http_session : public std::enable_shared_from_this<http_session>
-{
-    // This queue is used for HTTP pipelining.
-    class queue
-    {
-        enum
-        {
-            // Maximum number of responses we will queue
-                    limit = 8
-        };
-
-        // The type-erased, saved work item
-        struct work
-        {
-            virtual ~work() = default;
-            virtual void operator()() = 0;
-        };
-
-        http_session& self;
-        std::vector<std::unique_ptr<work>> items;
-
-    public:
-        explicit
-        queue(http_session& _self);
-
-        // Returns `true` if we have reached the queue limit
-        bool is_full() const;
-
-        // Called when a message finishes sending
-        // Returns `true` if the caller should initiate a read
-        bool on_write();
-
-        // Called by the HTTP handler to send a response.
-        template<bool isRequest, class Body, class Fields>
-        void operator()(http::message<isRequest, Body, Fields>&& msg_);
+// Обрабатывает соединение HTTP-сервера
+class http_session : public std::enable_shared_from_this<http_session> {
+  // This queue is used for HTTP pipelining.
+  class queue {
+    enum {
+      // Максимальное количество ответов, которые мы будем ставить в очередь
+      limit = 8
     };
 
-    beast::tcp_stream stream;
-    beast::flat_buffer buffer;
-    queue queue;
-    // The parser is stored in an optional container so we can
-    // construct it from scratch it at the beginning of each new message.
-    boost::optional<http::request_parser<http::string_body>> parser;
+    http_session& self;
+    std::vector<std::unique_ptr<work>> items;
 
-public:
-    // Take ownership of the socket
-    http_session(tcp::socket&& socket);
+   public:
+    explicit queue(http_session& _self);
 
+    bool is_full() const;
 
-    // Start the session
-    void run();
+    bool on_write();
 
-private:
-    void
-    do_read();
+    // Вызывается обработчиком HTTP для отправки ответа.
+    template <bool isRequest, class Body, class Fields>
+    void operator()(http::message<isRequest, Body, Fields>&& msg_);
+  };
 
-    void
-    on_read(beast::error_code ec, std::size_t bytes_transferred);
+  beast::tcp_stream stream;
+  beast::flat_buffer buffer;
+  queue queue;
+  // The parser is stored in an optional container so we can
+  // construct it from scratch it at the beginning of each new message.
+  boost::optional<http::request_parser<http::string_body>> parser;
 
-    void
-    on_write(bool close, beast::error_code ec, std::size_t bytes_transferred);
+ public:
+  // Получаем сокет
+  http_session(tcp::socket&& socket);
 
-    void do_close();
+  void run();
 
-//------------------------------------------------------------------------------
-    template<class Body, class Allocator, class Send>
-    void handle_request( http::request<Body, http::basic_fields<Allocator>>&& req,
-                        Send&& send);
+ private:
+  void do_read();
+
+  void on_read(beast::error_code ec, std::size_t bytes_transferred);
+
+  void on_write(bool close, beast::error_code ec,
+                std::size_t bytes_transferred);
+
+  void do_close();
+
+  template <class Body, class Allocator, class Send>
+  void handle_request(http::request<Body, http::basic_fields<Allocator>>&& req,
+                      Send&& send);
 };
 
 
 
-#endif //TECHPROJECT_HTTP_SESSION_H
+
+#endif  // TECHPROJECT_HTTP_SESSION_H
