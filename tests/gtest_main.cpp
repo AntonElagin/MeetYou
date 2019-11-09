@@ -3,6 +3,7 @@
 #include "../request.h"
 #include <boost/beast.hpp>
 #include <map>
+#include <../bd_tables_conectors.h>
 
 TEST(auth_request, is_auth) {
   auth_request<http::empty_body, http::basic_fields<std::allocator<char>>> req;
@@ -34,6 +35,10 @@ TEST(auth_request, return_id) {
   ASSERT_GE(auth.get_user_id(),1);
 }
 
+TEST(db, auth_user) {
+  auth_user user;
+  ASSERT_TRUE(user.is_login_valid("1231","12312"));
+}
 
 int main(int argc, char *argv[])
 {

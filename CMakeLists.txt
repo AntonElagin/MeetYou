@@ -36,7 +36,7 @@ add_executable(runServer main.cpp
         http_session.cpp
         http_session.h
         websocket_session.cpp
-        websocket_session.h runner.cpp runner.h request.cpp request.h tests/gmock/listener.h)
+        websocket_session.h runner.cpp runner.h request.cpp request.h tests/gmock/listener.h bd_tables_conectors.cpp bd_tables_conectors.h)
 
 target_link_libraries(runServer ${Boost_LIBRARIES} pthread
         ${LIBMYSQLCLIENT_INCLUDE_DIRS}
@@ -66,7 +66,7 @@ add_executable(runTests tests/gtest_main.cpp
         request.cpp
         request.h
         tests/test_gmock.cpp
-        tests/gmock/listener.h)
+        tests/gmock/listener.h bd_tables_conectors.cpp bd_tables_conectors.h)
 
 target_link_libraries(runTests
 #        ${GTEST_LIBRARIES} pthread

@@ -28,6 +28,10 @@ public:
   virtual http::response<http::string_body> post();
   virtual http::response<http::string_body> delete_();
   virtual http::response<http::string_body> put();
+
+private:
+  bool is_valid_toke();
+  void update_token();
 };
 
 

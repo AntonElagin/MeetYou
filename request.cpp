@@ -39,3 +39,8 @@ template<class Body, class Allocator>
 auth_request<Body, Allocator>::auth_request(http::request<Body> req) : req(req){
 
 }
+
+template<class Body, class Allocator>
+void auth_request<Body, Allocator>::update_token() {
+
+}
