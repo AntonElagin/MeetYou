@@ -15,39 +15,44 @@ using ::testing::Return;
 using ::testing::_;
 using tcp = boost::asio::ip::tcp;
 namespace http = boost::beast::http;
-class Mock_chat : public Chat {
-    MOCK_CONST_METHOD0(save_chat, bool());
+
+class Mock_chat {
+public:
+    MOCK_METHOD0(save_chat, bool());
 };
+
 std::shared_ptr<http::request<http::string_body>> generate_request_post(string body) {
-    auto req=std::make_shared<http::request<http::string_body>>(http::verb::post, "/chat/560",11);
+    auto req = std::make_shared<http::request<http::string_body>>(http::verb::post, "/chat/560", 11);
     req->set(http::field::user_agent, "Beast");
     req->body() = body;
     req->prepare_payload();
     return req;
 }
-std::shared_ptr<Chat> generate_chat(int bigid=9999999){
-    int creator_id=rand()%200; ///планируется взять id из бд
-    boost::gregorian::date d(2002,boost::gregorian::Jan,10);
-    auto chat = std::make_shared<Chat>(bigid,creator_id,100,"sometext",d);
+
+std::shared_ptr<Chat> generate_chat(int bigid = 9999999) {
+    int creator_id = rand() % 200; ///планируется взять id из бд
+    boost::gregorian::date d(2002, boost::gregorian::Jan, 10);
+    auto chat = std::make_shared<Chat>(bigid, creator_id, 100, "sometext", d);
     return chat;
 }
-std::shared_ptr<Chat> find_chat(int id){
+
+std::shared_ptr<Chat> find_chat(int id) {
     //поиск в бд
     //if (founded) generate_chat(1);
-    boost::gregorian::date d(2002,boost::gregorian::Jan,10);
-    auto chat = std::make_shared<Chat>(1,1,1,"",boost::gregorian::day_clock::local_day());
+    boost::gregorian::date d(2002, boost::gregorian::Jan, 10);
+    auto chat = std::make_shared<Chat>(1, 1, 1, "", boost::gregorian::day_clock::local_day());
     return chat;
 }
-std::shared_ptr<User> find_user(int userid){
+
+std::shared_ptr<User> find_user(int userid) {
     //поиск юзера с заданным id
-    auto user=std::make_shared<User>(rand()%100,"some_text");
+    auto user = std::make_shared<User>(rand() % 100, "some_text");
     return user;
 }
 
 TEST(chat_validate_test, call_validate) {
-//    Mock_chat chat;
-//    EXPECT_CALL(chat, PenDown())
-//            .Times(AtLeast(1));
+    Mock_chat chat;
+    EXPECT_CALL(chat, save_chat()).Times(1);
 }
 TEST(chat_test, save_chat) {
     auto some_chat=generate_chat();
@@ -78,6 +83,6 @@ TEST(request_test, validate) {
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
-  //  ::testing::InitGoogleMock(&argc, argv);
+  // ::testing::InitGoogleMock(&argc, argv);
     return RUN_ALL_TESTS();
 }
