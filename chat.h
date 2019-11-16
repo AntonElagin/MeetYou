@@ -3,38 +3,48 @@
 
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include <string>
-#include "message.h"
-#include "user.h"
+#include "basic_classes.h"
+
 using std::string;
 
-class Chat {
-    int chat_id;
-    int creator_id;
-    int q_member;
-    string title;
-    boost::gregorian::date create_date;
+class GroupChat : public Chat {
+protected:
+    int adminid;
 public:
-    explicit Chat(int chat_id, int creator_id, int q_member, string title,
-                  boost::gregorian::date date = boost::gregorian::day_clock::local_day()) :
-            chat_id(chat_id), creator_id(creator_id), q_member(q_member), title(title), create_date(date) {}
+    shared_ptr<vector<int>> getpeople() override;
 
-    explicit Chat(int id);///when find chat from db
-    bool save_chat() const;
-    bool del_chat();
+    explicit GroupChat();
 };
 
-class Chat_message_handler : public Chat {
+class PersonalChat : public Chat {
 public:
-    void add(Message &mes);
+    shared_ptr<vector<int>> getpeople() override;
 
-    void del(Message &mes);
+    explicit PersonalChat();
 };
 
-class Chat_user_handler : public Chat {
+class OnlineChat : public GroupChat {
 public:
-    void add(User &mes);
+    shared_ptr<vector<int>> getpeople() override;//get online member
 
-    void del(Message &mes);
+    explicit OnlineChat();
+};
+
+class OfflineChat : public GroupChat {
+public:
+    shared_ptr<vector<int>> getpeople() override;//get all member in chat
+
+    explicit OfflineChat();
+};
+
+template<class T>
+class HistoryChat {
+    shared_ptr<Chat> chat;
+    vector<T> history_list;
+public:
+    HistoryChat(Chat *);
+
+    vector<IObject> get_history();
 };
 
 
