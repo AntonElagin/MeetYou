@@ -13,28 +13,24 @@ protected:
 public:
     shared_ptr<vector<int>> getpeople() override;
 
-    explicit GroupChat();
 };
 
 class PersonalChat : public Chat {
 public:
     shared_ptr<vector<int>> getpeople() override;
 
-    explicit PersonalChat();
 };
 
 class OnlineChat : public GroupChat {
 public:
     shared_ptr<vector<int>> getpeople() override;//get online member
 
-    explicit OnlineChat();
 };
 
 class OfflineChat : public GroupChat {
 public:
     shared_ptr<vector<int>> getpeople() override;//get all member in chat
 
-    explicit OfflineChat();
 };
 
 template<class T>

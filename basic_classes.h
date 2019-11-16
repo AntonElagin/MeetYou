@@ -26,9 +26,8 @@ class Chat : public IObject {
 public:
     int getid() override;
 
-    explicit Chat();
 
-    virtual shared_ptr<vector<int>> getpeople();
+    virtual shared_ptr<vector<int>> getpeople() = 0;
 
 };
 

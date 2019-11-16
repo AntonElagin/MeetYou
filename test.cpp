@@ -19,20 +19,32 @@ using ::testing::_;
 using tcp = boost::asio::ip::tcp;
 namespace http = boost::beast::http;
 
-//class MockRouter : public Router {
-//public:
-//    //MOCK_METHOD(int, parse,(string request), (override);
-//    MOCK_METHOD1(parse,int(string request));
-//
-//};
-//
-//
-//TEST(chat_validate_test, call_validate) {
-//    MockRouter router;
-//    EXPECT_CALL(router, parse("somestring"))
-//            .Times(testing::AtLeast(1));
-//
-//}
+class MockRouter : public Router {
+public:
+    //MOCK_METHOD(int, parse,(string request), (override);
+    MOCK_METHOD1(parse, int(string
+            request));
+
+};
+
+class MockChat {
+public:
+    MOCK_METHOD0(gethistory, vector<IObject>*());
+};
+
+
+TEST(chat_validate_test, call_validate) {
+    MockRouter router;
+    EXPECT_CALL(router, parse("somestring"))
+            .Times(testing::AtLeast(1));
+
+}
+
+TEST(chat_call, get_people) {
+    MockChat chat;
+    EXPECT_CALL(chat, gethistory()).Times(0);
+
+}
 
 TEST(chat_validate_test, validate) {
     DataValidator validator;
@@ -47,17 +59,17 @@ TEST(chat_get_people, online_chat) {
     EXPECT_EQ(*people, some_people_id);
 }
 
-//TEST(chat_history, get_history) {
-//    HistoryChat<Message> historychat(new Chat);
-//    Message mes1,mes2;
-//    vector<Message> hist2={mes1,mes2};
-//
-//    EXPECT_EQ(historychat.get_history(),hist2);
-//}
+TEST(chat_history, get_history) {
+    HistoryChat<Message> historychat(new OfflineChat);
+    Message mes1, mes2;
+    vector<Message> hist2 = {mes1, mes2};
+
+    EXPECT_EQ(historychat.get_history(), hist2);
+}
 
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
-    // ::testing::InitGoogleMock(&argc, argv);
+    ::testing::InitGoogleMock(&argc, argv);
     return RUN_ALL_TESTS();
 }
