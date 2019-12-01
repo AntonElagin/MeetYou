@@ -2,11 +2,18 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
-#include "runner.h"
+#include "../include/runner.h"
+#include <mysql/mysql.h>
+#include <mysql_connection.h>
+#include <mysql_driver.h>
+#include <mysql_error.h>
+
 
 
 int main(int argc, char* argv[]) {
-  // Check command line arguments.
+
+
+
   if (argc != 4) {
     std::cerr << "Somethin went wrong\n"
               << "Example:\n"
@@ -17,7 +24,7 @@ int main(int argc, char* argv[]) {
   auto port = static_cast<unsigned short>(std::atoi(argv[2]));
   int threads = std::max<int>(1, std::atoi(argv[3]));
 
-  runner<listener> serv(address, port, threads); // TODO : Нужно  для тестов
+  runner  serv(address, port, threads);
   serv.run();
 
 

@@ -15,27 +15,27 @@
 #include <utility>
 #include <vector>
 #include "listener.h"
+#include "runner_interface.h"
 
 namespace beast = boost::beast;
 namespace http = boost::beast::http;
 namespace websocket =
-    boost::beast::websocket;
+boost::beast::websocket;
 namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
 
 
-  template<class T>  // TODO : Нужно  для тестов
-  class runner {
-    boost::asio::ip::address const address;
-    unsigned short const port;
-    int const threads;
+class runner : public RunnerInterface {
+  boost::asio::ip::address const address;
+  unsigned short const port;
+  int const threads;
 
-  public:
-    void run();
+public:
+  runner(net::ip::address address, const unsigned int &port,
+         const int &threads);
 
-    runner(net::ip::address address, const unsigned int &port,
-           const int &threads);
-  };
+  void run() override;
+};
 
 
 #endif  // TECHPROJECT_RUNNER_H

@@ -1,5 +1,11 @@
-#include "http_session.h"
-#include "tests/gmock/http_session.h"
+#include "../include/http_session.h"
+#include "mysql_connection.h"
+#include "mysql_driver.h"
+#include <cppconn/driver.h>
+#include <cppconn/connection.h>
+#include <cppconn/exception.h>
+#include <cppconn/resultset.h>
+#include <cppconn/statement.h>
 
 
 http_session::http_session(tcp::socket&& socket)
@@ -75,7 +81,45 @@ void http_session::do_close() {
 template <class Body, class Allocator, class Send>
 void http_session::handle_request(
     http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send) {
-  //    Тут будет парсинг url и перенаправление на response_request(request)
+
+  std::cout << req.method() << std::endl;
+  std::cout << req.get() << std::endl;
+//  try {
+//
+//    sql::ResultSet *res;
+//    sql::Driver* driver = get_driver_instance();
+//    std::unique_ptr<sql::Connection> con(driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
+//    con->setSchema("MeetYou");
+//    std::unique_ptr<sql::Statement> stmt(con->createStatement());
+//
+//    res = stmt->executeQuery("SELECT * FROM user");
+//
+//    while (res->next()) {
+//      std::cout << res->getString(1) << "-";
+//      std::cout << res->getString(2) << "-";
+//      std::cout << res->getString(3) << "\n";
+//    }
+//
+//    delete res;
+//
+//  } catch (sql::SQLException &e)
+//  {
+//    std::cout << e.what() << std::endl
+//    << "kek";
+//  }
+
+  // Respond to GET request
+  std::string body;
+  body = "queasiness's";
+  http::response<http::string_body > res1{
+      std::piecewise_construct,
+      std::make_tuple(body),
+      std::make_tuple(http::status::ok, req.version())};
+  res1.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+  res1.set(http::field::content_type, "application/json");
+  res1.content_length(body.size());
+  res1.keep_alive(req.keep_alive());
+  return send(std::move(res1));
 }
 
 http_session::queue::queue(http_session& _self) : self(_self) {

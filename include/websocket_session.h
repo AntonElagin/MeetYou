@@ -4,11 +4,12 @@
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include "fail.h"
+#include "websocket_session_interface.h"
 
 namespace beast = boost::beast;
 namespace http = boost::beast::http;
 namespace websocket =
-    boost::beast::websocket;
+boost::beast::websocket;
 namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
 
@@ -18,12 +19,12 @@ class websocket_session
   websocket::stream<beast::tcp_stream> ws_;
   beast::flat_buffer buffer_;
 
- public:
+public:
   // Take ownership of the socket
-  explicit websocket_session(tcp::socket&& socket);
+  explicit websocket_session(tcp::socket &&socket);
 
   // Start the asynchronous accept operation
-  template <class Body, class Allocator>
+  template<class Body, class Allocator>
   void do_accept(http::request<Body, http::basic_fields<Allocator>> req) {
     // Set suggested timeout settings for the websocket
     ws_.set_option(
@@ -31,7 +32,7 @@ class websocket_session
 
     // Set a decorator to change the Server of the handshake
     ws_.set_option(
-        websocket::stream_base::decorator([](websocket::response_type& res) {
+        websocket::stream_base::decorator([](websocket::response_type &res) {
           res.set(http::field::server,
                   std::string(BOOST_BEAST_VERSION_STRING) + " advanced-server");
         }));
@@ -42,7 +43,7 @@ class websocket_session
                                                shared_from_this()));
   }
 
- private:
+private:
   void on_accept(beast::error_code ec);
 
   void do_read();

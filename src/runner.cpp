@@ -1,19 +1,19 @@
-#include "runner.h"
+#include "../include/runner.h"
 
 #include <utility>
 
-template <class T> // TODO : Нужно  для тестов
-runner<T>::runner(net::ip::address _address, const unsigned int &_port,
+
+runner::runner(net::ip::address _address, const unsigned int &_port,
                const int &_threads)
     : address(std::move(_address)), port(_port), threads(_threads) {}
 
-template <class T> // TODO : Нужно  для тестов
-void runner<T>::run() {
+
+void runner::run() {
   // Io_context требуется для всех операций ввода-вывода
   boost::asio::io_context ioc{threads};
 
   // Создаем и запускаем порт прослушивания
-  std::make_shared<T>(ioc, tcp::endpoint{address, port})->run();
+  std::make_shared<listener>(ioc, tcp::endpoint{address, port})->run();
 
   // Захват SIGINT и SIGTERM для выполнения чистого завершения работы
   boost::asio::signal_set signals(ioc, SIGINT, SIGTERM);

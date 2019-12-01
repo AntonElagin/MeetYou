@@ -1,9 +1,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "../request.h"
+#include "../include/view_interface.h"
 #include <boost/beast.hpp>
 #include <map>
-#include <../bd_tables_conectors.h>
+#include "../include/bd_tables_conectors.h"
 
 TEST(auth_request, is_auth) {
   auth_request<http::empty_body, http::basic_fields<std::allocator<char>>> req;
