@@ -4,7 +4,9 @@
 #include <cstdlib>
 #include <string>
 #include <memory>
+#include <regex>
 #include "validator.h"
+#include "handler_classes.h"
 
 using std::shared_ptr;
 using std::string;
@@ -12,19 +14,21 @@ using std::string;
 class Router {
     IValidator *validator;
 public:
-    virtual int parse(string request) = 0;
+    virtual IObjHandler *parse(string request) = 0;
+
 };
 
-class Chat_route : public Router {
+class Chat_router : public Router {
+
 public:
-    int parse(string request) override;
+    IObjHandler *parse(string request) override;
 };
 
 class Common_router : public Router {
     shared_ptr<Router> chat_route;
 
 public:
-    int parse(string request) override;
+    IObjHandler *parse(string request) override;
 };
 
 

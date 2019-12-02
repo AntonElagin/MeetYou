@@ -18,16 +18,21 @@ protected:
 public:
     virtual int getid() = 0;
 
+    IObject(int id, string name) : id(id), name(name) {}
 };
 
 class Chat : public IObject {
     boost::gregorian::date create_date;
-    vector<int> member;
+    int members_count;
+    vector<int> people;
 public:
     int getid() override;
 
+    Chat(int id, string name, int member_count, boost::gregorian::date date) : IObject(id, name),
+                                                                               members_count(member_count), create_date(
+                    boost::gregorian::day_clock::local_day()) {}
 
-    virtual shared_ptr<vector<int>> getpeople() = 0;
+    //virtual shared_ptr<vector<int>> getpeople() = 0;
 
 };
 

@@ -8,29 +8,47 @@ class IObjHandler {
 protected:
     IObject *object;
     IAccept *acceptor;
+
 public:
     virtual bool add() = 0;
+
+    virtual bool update() = 0;
+
+    bool choicer();
 
     virtual bool del() = 0;
 
     bool set_obj(IObject *);
+
+    vector<std::string> params_list;
 };
 
 class ChatHandler : public IObjHandler {
+public:
     bool add() override;
+
+    bool update() override;
+
 
     bool del() override;
 
 };
 
 class MessageHandler : public IObjHandler {
+public:
     bool add() override;
 
+    bool update() override;
+
     bool del() override;
+
 };
 
 class UserHandler : public IObjHandler {
+public:
     bool add() override;
+
+    bool update() override;
 
     bool del() override;
 };
