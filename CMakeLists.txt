@@ -40,7 +40,7 @@ add_executable(runServer src/main.cpp
         include/runner.h
         src/view_interface.cpp
         include/view_interface.h tests/gmock/listener.h src/bd_tables_conectors.cpp include/bd_tables_conectors.h include/runner_interface.h include/listener_interfece.h include/http_session_interface.h include/websocket_session_interface.h src/router_interface.cpp include/router_interface.h include/auth_middleware.h include/auth_middleware_interface.h
-        src/auth_middleware.cpp)
+        src/auth_middleware.cpp src/md5.cpp include/md5.h src/router.cpp include/router.h)
 
 set(EXTRA_LIBRARY "mysqlcppconn")
 find_library(MYSQL_LIB mysqlcppconn)

@@ -6,6 +6,7 @@
 #include <cppconn/exception.h>
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
+#include "../include/auth_middleware.h"
 
 
 http_session::http_session(tcp::socket&& socket)
@@ -47,6 +48,7 @@ void http_session::on_read(beast::error_code ec,
   }
 
   // Отправляем ответ
+  // TODO : зааменить на роутинг
   handle_request(parser->release(), queue);
 
   // Если мы не находимся на пределе очереди, попробуйте передать другой запрос
@@ -82,31 +84,38 @@ template <class Body, class Allocator, class Send>
 void http_session::handle_request(
     http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send) {
 
-  std::cout << req.method() << std::endl;
-  std::cout << req.get() << std::endl;
-//  try {
-//
-//    sql::ResultSet *res;
-//    sql::Driver* driver = get_driver_instance();
-//    std::unique_ptr<sql::Connection> con(driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
-//    con->setSchema("MeetYou");
-//    std::unique_ptr<sql::Statement> stmt(con->createStatement());
-//
+
+//  std::cout << req.method() << std::endl;
+//  std::cout << req.target() << std::endl;
+//  std::cout << req.set() << std::endl;
+
+//  std::cout << req["Cookie"] << std::endl;
+  boost::string_view st = req.at("Cookie");
+
+//  std::cout << req.get()[http::] << std::endl;
+
+  try {
+
+    sql::ResultSet *res;
+    sql::Driver *driver = get_driver_instance();
+    std::shared_ptr<sql::Connection> con(driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
+    con->setSchema("MeetYou");
+//    std::shared_ptr<sql::PreparedStatement> stmt(con->createStatement());
+    AuthMiddleware authMiddleware(con, st);
+    authMiddleware.is_Auth();
 //    res = stmt->executeQuery("SELECT * FROM user");
-//
 //    while (res->next()) {
 //      std::cout << res->getString(1) << "-";
 //      std::cout << res->getString(2) << "-";
 //      std::cout << res->getString(3) << "\n";
 //    }
-//
-//    delete res;
-//
-//  } catch (sql::SQLException &e)
-//  {
-//    std::cout << e.what() << std::endl
-//    << "kek";
-//  }
+
+
+  } catch (sql::SQLException &e)
+  {
+    std::cout << e.what() << std::endl
+    << "kek";
+  }
 
   // Respond to GET request
   std::string body;
