@@ -4,6 +4,7 @@
 #include "basic_classes.h"
 #include "accept_actions.h"
 #include "connector.h"
+#include <string>
 
 class IObjHandler {
 protected:
@@ -11,13 +12,13 @@ protected:
     IAccept *acceptor;
     Connector *connector = nullptr;
 public:
-    virtual bool add() = 0;
+    virtual std::string add() = 0;
 
-    virtual bool update() = 0;
+    virtual std::string update() = 0;
 
-    virtual bool choicer();
+    virtual std::string choicer();
 
-    virtual bool del() = 0;
+    virtual std::string del() = 0;
 
     bool set_bd_connector(Connector *conn) { connector = conn; }
 
@@ -26,36 +27,36 @@ public:
 
 class ChatHandler : public IObjHandler {
 public:
-    bool add() override;
+    std::string add() override;
 
-    bool update() override;
+    std::string update() override;
 
-    bool del() override;
+    std::string del() override;
 
-    bool chat_history();
+    std::string chat_history();
 
-    bool members_count();
+    std::string members_count();
 
-    bool choicer() override;
+    std::string choicer() override;
 };
 
 class MessageHandler : public IObjHandler {
 public:
-    bool add() override;
+    std::string add() override;
 
-    bool update() override;
+    std::string update() override;
 
-    bool del() override;
+    std::string del() override;
 
 };
 
 class UserHandler : public IObjHandler {
 public:
-    bool add() override;
+    std::string add() override;
 
-    bool update() override;
+    std::string update() override;
 
-    bool del() override;
+    std::string del() override;
 };
 
 #endif //PLUS_PROJECT_HANDLER_CLASSES_H

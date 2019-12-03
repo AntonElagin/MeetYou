@@ -1,42 +1,78 @@
 #include "handler_classes.h"
 #include "connector.h"
 
-bool ChatHandler::add() {
-
-}
-
-bool ChatHandler::update() {
-    return false;
-}
-
-bool ChatHandler::del() {
-    return false;
-}
-
-bool ChatHandler::chat_history() {
+std::string ChatHandler::add() {
+    sql::Connection *con = connector->get_con();
     sql::PreparedStatement *pstmt;
-    pstmt = connector->get_con()->prepareStatement("");
-    return false;
+    pstmt = con->prepareStatement(
+            "insert into Chat (id, members_count, create_date, admin_id, title) values (null, 0,CURDATE() , 6, 'some title')");
+    pstmt->setInt(1, std::stoi(params_list.back()));
+    pstmt->executeUpdate();
+    delete pstmt;
+    return "okey, chat with id=" + params_list.back() + " created";
 }
 
-bool ChatHandler::choicer() {
+std::string ChatHandler::update() {
+    return "ok";
+}
+
+std::string ChatHandler::del() {
+    sql::Connection *con = connector->get_con();
+    sql::PreparedStatement *pstmt;
+    pstmt = con->prepareStatement("delete from Message where chat_id=?");
+    pstmt->setInt(1, std::stoi(params_list.back()));
+    pstmt->executeUpdate();
+    pstmt = con->prepareStatement("delete from Chat where id=?");
+    pstmt->setInt(1, std::stoi(params_list.back()));
+    pstmt->executeUpdate();
+    pstmt = con->prepareStatement("delete from result_table where chat_id=?");
+    pstmt->setInt(1, std::stoi(params_list.back()));
+    pstmt->executeUpdate();
+    delete pstmt;
+    return "okey, chat with id=" + params_list.back() + " is deleted";
+}
+
+string ChatHandler::chat_history() {
+    sql::PreparedStatement *pstmt;
+    std::string result_str = "{";
+    pstmt = connector->get_con()->prepareStatement(
+            "select body text,username nick from User,Message where chat_id=? and author_id=User.id");
+    pstmt->setInt(1, std::stoi(params_list.back()));
+    sql::ResultSet *res = pstmt->executeQuery();
+    while (res->next()) {
+        result_str += res->getString("text") + " : ";
+        result_str += res->getString("nick") + " ";
+    }
+    return result_str;
+}
+
+std::string ChatHandler::choicer() {
     if (params_list[1] == "history")
-        chat_history();
+        return chat_history();
     else if (params_list[1] == "del")
-        del();
+        return del();
     else if (params_list[1] == "add")
-        add();
+        return add();
     else if (params_list[1] == "members_count")
-        members_count();
-    return true;
+        return members_count();
+    return "some error with routing";
 }
 
-bool ChatHandler::members_count() {
-    return false;
+std::string ChatHandler::members_count() {
+    sql::PreparedStatement *pstmt;
+    std::string result_str = "{";
+    pstmt = connector->get_con()->prepareStatement(
+            "select count(user_id)from result_table where chat_id=?");
+    pstmt->setInt(1, std::stoi(params_list.back()));
+    sql::ResultSet *res = pstmt->executeQuery();
+    while (res->next()) {
+        result_str += res->getInt(1);
+    }
+    return result_str;
 }
 
 
-bool MessageHandler::add() {
+std::string MessageHandler::add() {
     sql::Connection *con = connector->get_con();
     sql::PreparedStatement *pstmt;
     string body = params_list[3];
@@ -51,10 +87,10 @@ bool MessageHandler::add() {
         pstmt->executeUpdate();
     }
     delete pstmt;
-    return false;
+    return "ok, message with body " + params_list[3] + ", to chatid=" + params_list.back() + "is added";
 }
 
-bool MessageHandler::update() {
+std::string MessageHandler::update() {
     sql::Connection *con = connector->get_con();
     sql::ResultSet *res;
     sql::PreparedStatement *pstmt;
@@ -63,11 +99,10 @@ bool MessageHandler::update() {
     pstmt->setInt(1, std::stoi(params_list.back()));
     pstmt->executeUpdate();
     delete pstmt;
-    return false;
-    return false;
+    return "ok";
 }
 
-bool MessageHandler::del() {
+std::string MessageHandler::del() {
     sql::Connection *con = connector->get_con();
     sql::ResultSet *res;
     sql::PreparedStatement *pstmt;
@@ -76,24 +111,24 @@ bool MessageHandler::del() {
     pstmt->setInt(1, std::stoi(params_list.back()));
     pstmt->executeUpdate();
     delete pstmt;
-    return false;
+    return "ok";
 }
 
 
-bool UserHandler::add() {
+std::string UserHandler::add() {
 
-    return false;
+    return "";
 }
 
-bool UserHandler::update() {
-    return false;
+std::string UserHandler::update() {
+    return "";
 }
 
-bool UserHandler::del() {
-    return false;
+std::string UserHandler::del() {
+    return "";
 }
 
-bool IObjHandler::choicer() {
+std::string IObjHandler::choicer() {
     if (params_list[1] == "add")
         add();
     else if (params_list[1] == "del")
