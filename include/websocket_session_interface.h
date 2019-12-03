@@ -5,10 +5,10 @@
 //
 //#include <boost/beast/http/message.hpp>
 //
-//using boost::beast::http::request ;
-//using boost::beast::http::basic_fields;
+// using boost::beast::http::request ;
+// using boost::beast::http::basic_fields;
 //
-//class WebsocketSessionInterface {
+// class WebsocketSessionInterface {
 ////  template <class Body, class Allocator>
 ////  virtual void do_accept(request<Body, basic_fields<Allocator>> req) = 0;
 //};

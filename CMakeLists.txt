@@ -10,10 +10,21 @@ set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 set(BOOST_ALL_DYN_LINK OFF)
+set(nlohmann_json_DIR "/home/anton/apps/json")
+#set(nlohmann_json_INCLUDEDIR "/home/anton/apps/json")
+#set(JSON_LIBRARYDIR "/home/anton/apps/json/lib")
+
 
 find_package (Boost REQUIRED COMPONENTS system filesystem)
 if (Boost_FOUND)
     include_directories (SYSTEM ${Boost_INCLUDE_DIR})
+endif ()
+
+find_package (nlohmann_json REQUIRED )
+if (nlohmann_json_FOUND)
+    include_directories (SYSTEM ${nlohmann_json_INCLUDE_DIR})
+else()
+    message("error")
 endif ()
 
 
@@ -28,31 +39,45 @@ endif ()
 #link_directories(${mysqlcppconn8_LIBRARY_DIRS})
 
 
-add_executable(runServer src/main.cpp
-        src/listener.cpp
+add_executable(runServer
         include/listener.h
-        src/fail.cpp
+        include/view_registration.h
         include/fail.h
-        src/http_session.cpp
         include/http_session.h
-        src/websocket_session.cpp
         include/websocket_session.h src/runner.cpp
         include/runner.h
-        src/view_interface.cpp
-        include/view_interface.h tests/gmock/listener.h src/bd_tables_conectors.cpp include/bd_tables_conectors.h include/runner_interface.h include/listener_interfece.h include/http_session_interface.h include/websocket_session_interface.h src/router_interface.cpp include/router_interface.h include/auth_middleware.h include/auth_middleware_interface.h
-        src/auth_middleware.cpp src/md5.cpp include/md5.h src/router.cpp include/router.h)
-
+        include/view.h
+        include/bd_tables_conectors.h
+        include/runner_interface.h
+        include/listener_interfece.h
+        include/http_session_interface.h
+        include/websocket_session_interface.h
+        include/router_interface.h
+        include/auth_middleware.h
+        include/auth_middleware_interface.h
+        src/auth_middleware.cpp
+        src/md5.cpp include/md5.h
+        src/router.cpp include/router.h
+        src/router_interface.cpp
+        src/http_session.cpp
+        src/websocket_session.cpp
+        src/bd_tables_conectors.cpp
+        src/view_registration.cpp
+        src/fail.cpp
+        src/main.cpp
+        src/listener.cpp
+        src/view.cpp)
 set(EXTRA_LIBRARY "mysqlcppconn")
 find_library(MYSQL_LIB mysqlcppconn)
-#target_link_libraries(runServer ${MYSQL_LIB})
-#find_library(libmysqlcppconn8 mysqlcppconn8)
 
 target_link_libraries(runServer ${Boost_LIBRARIES} pthread
         ${LIBMYSQLCLIENT_INCLUDE_DIRS}
         ${LIBMYSQLCLIENT_LIBRARIES}
         ${mysqlcppconn8_INCLUDE_DIRS}
         ${mysqlcppconn8_LIBRARIES}
-        ${MYSQL_LIB})
+        ${MYSQL_LIB}
+        ${nlohmann_json}
+        nlohmann_json::nlohmann_json)
 
 
 

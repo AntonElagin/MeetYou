@@ -1,13 +1,45 @@
 #include "../include/http_session.h"
-#include "mysql_connection.h"
-#include "mysql_driver.h"
-#include <cppconn/driver.h>
+
 #include <cppconn/connection.h>
+#include <cppconn/driver.h>
 #include <cppconn/exception.h>
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 #include "../include/auth_middleware.h"
+#include "mysql_connection.h"
+#include "mysql_driver.h"
 
+template <class Send>
+void handle_request1(const http::request<http::string_body>& req, Send&& send) {
+  boost::string_view st = req.at("Cookie");
+
+  try {
+    sql::ResultSet* res;
+    sql::Driver* driver = get_driver_instance();
+    std::shared_ptr<sql::Connection> con(
+        driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
+    con->setSchema("MeetYou");
+
+    AuthMiddleware authMiddleware(con, st);
+    authMiddleware.is_Auth();
+
+    ViewRegistration reg(req, con);
+    reg.get();
+  } catch (sql::SQLException& e) {
+    std::cout << e.what() << std::endl << "kek";
+  }
+  // Respond to GET request
+  std::string body;
+  body = "queasiness's";
+  http::response<http::string_body> res1{
+      std::piecewise_construct, std::make_tuple(body),
+      std::make_tuple(http::status::ok, req.version())};
+  res1.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+  res1.set(http::field::content_type, "application/json");
+  res1.content_length(body.size());
+  res1.keep_alive(req.keep_alive());
+  return send(std::move(res1));
+}
 
 http_session::http_session(tcp::socket&& socket)
     : stream(std::move(socket)), queue(*this) {}
@@ -49,7 +81,8 @@ void http_session::on_read(beast::error_code ec,
 
   // Отправляем ответ
   // TODO : зааменить на роутинг
-  handle_request(parser->release(), queue);
+  //  handle_request(parser->release(), queue);
+  handle_request1(parser->release(), queue);
 
   // Если мы не находимся на пределе очереди, попробуйте передать другой запрос
   // по конвейеру
@@ -83,46 +116,29 @@ void http_session::do_close() {
 template <class Body, class Allocator, class Send>
 void http_session::handle_request(
     http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send) {
-
-
-//  std::cout << req.method() << std::endl;
-//  std::cout << req.target() << std::endl;
-//  std::cout << req.set() << std::endl;
-
-//  std::cout << req["Cookie"] << std::endl;
   boost::string_view st = req.at("Cookie");
 
-//  std::cout << req.get()[http::] << std::endl;
-
   try {
-
-    sql::ResultSet *res;
-    sql::Driver *driver = get_driver_instance();
-    std::shared_ptr<sql::Connection> con(driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
+    sql::ResultSet* res;
+    sql::Driver* driver = get_driver_instance();
+    std::shared_ptr<sql::Connection> con(
+        driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
     con->setSchema("MeetYou");
-//    std::shared_ptr<sql::PreparedStatement> stmt(con->createStatement());
+
     AuthMiddleware authMiddleware(con, st);
     authMiddleware.is_Auth();
-//    res = stmt->executeQuery("SELECT * FROM user");
-//    while (res->next()) {
-//      std::cout << res->getString(1) << "-";
-//      std::cout << res->getString(2) << "-";
-//      std::cout << res->getString(3) << "\n";
-//    }
 
-
-  } catch (sql::SQLException &e)
-  {
-    std::cout << e.what() << std::endl
-    << "kek";
+    //    ViewRegistration<Body, Allocator> reg(req, con);
+    //    reg.get();
+  } catch (sql::SQLException& e) {
+    std::cout << e.what() << std::endl << "kek";
   }
 
   // Respond to GET request
   std::string body;
   body = "queasiness's";
-  http::response<http::string_body > res1{
-      std::piecewise_construct,
-      std::make_tuple(body),
+  http::response<http::string_body> res1{
+      std::piecewise_construct, std::make_tuple(body),
       std::make_tuple(http::status::ok, req.version())};
   res1.set(http::field::server, BOOST_BEAST_VERSION_STRING);
   res1.set(http::field::content_type, "application/json");
@@ -170,8 +186,4 @@ void http_session::queue::operator()(
   if (items.size() == 1) (*items.front())();
 }
 
-bool http_session::queue::is_full() const {
-  return items.size() >= limit;
-}
-
-
+bool http_session::queue::is_full() const { return items.size() >= limit; }

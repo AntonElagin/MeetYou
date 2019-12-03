@@ -10,7 +10,8 @@ class auth_user {
   std::string _password;
   std::string _token;
   int _token_lifetime;
-public:
+
+ public:
   auth_user();
 
   unsigned int id();
@@ -29,9 +30,8 @@ public:
 
   void get_by_token(std::string token);
 
-  void add_user(unsigned int _id, std::string _username,
-                std::string _email, std::string _password,
-                std::string _token, int _token_lifetime;
+  void add_user(unsigned int _id, std::string _username, std::string _email,
+                std::string _password, std::string _token, int _token_lifetime;
 
   );
 
@@ -40,5 +40,4 @@ public:
   bool is_login_valid(std::string email, std::string password);
 };
 
-
-#endif //TECHPROJECT_BD_TABLES_CONECTORS_H
+#endif  // TECHPROJECT_BD_TABLES_CONECTORS_H

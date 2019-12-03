@@ -9,4 +9,4 @@ class ListenerInterface {
   virtual void run() = 0;
 };
 
-#endif //TECHPROJECT_LISTENER_INTERFECE_H
+#endif  // TECHPROJECT_LISTENER_INTERFECE_H

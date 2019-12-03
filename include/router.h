@@ -5,10 +5,6 @@
 #ifndef TECHPROJECT_ROUTER_H
 #define TECHPROJECT_ROUTER_H
 
+class router {};
 
-class router {
-
-};
-
-
-#endif //TECHPROJECT_ROUTER_H
+#endif  // TECHPROJECT_ROUTER_H

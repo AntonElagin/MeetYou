@@ -2,11 +2,9 @@
 
 #include <utility>
 
-
 runner::runner(net::ip::address _address, const unsigned int &_port,
                const int &_threads)
     : address(std::move(_address)), port(_port), threads(_threads) {}
-
 
 void runner::run() {
   // Io_context требуется для всех операций ввода-вывода

@@ -1,7 +1,3 @@
-//
-// Created by anton on 08.11.2019.
-//
-
 #ifndef TECHPROJECT_FAIL_H
 #define TECHPROJECT_FAIL_H
 

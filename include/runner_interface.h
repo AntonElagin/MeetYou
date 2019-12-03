@@ -6,8 +6,7 @@
 #define TECHPROJECT_RUNNER_INTERFACE_H
 
 class RunnerInterface {
-
   virtual void run() = 0;
 };
 
-#endif //TECHPROJECT_RUNNER_INTERFACE_H
+#endif  // TECHPROJECT_RUNNER_INTERFACE_H

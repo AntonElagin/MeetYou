@@ -8,8 +8,7 @@
 
 namespace beast = boost::beast;
 namespace http = boost::beast::http;
-namespace websocket =
-boost::beast::websocket;
+namespace websocket = boost::beast::websocket;
 namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
 
@@ -19,12 +18,12 @@ class websocket_session
   websocket::stream<beast::tcp_stream> ws_;
   beast::flat_buffer buffer_;
 
-public:
+ public:
   // Take ownership of the socket
   explicit websocket_session(tcp::socket &&socket);
 
   // Start the asynchronous accept operation
-  template<class Body, class Allocator>
+  template <class Body, class Allocator>
   void do_accept(http::request<Body, http::basic_fields<Allocator>> req) {
     // Set suggested timeout settings for the websocket
     ws_.set_option(
@@ -43,7 +42,7 @@ public:
                                                shared_from_this()));
   }
 
-private:
+ private:
   void on_accept(beast::error_code ec);
 
   void do_read();

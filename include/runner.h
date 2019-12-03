@@ -19,23 +19,20 @@
 
 namespace beast = boost::beast;
 namespace http = boost::beast::http;
-namespace websocket =
-boost::beast::websocket;
+namespace websocket = boost::beast::websocket;
 namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
-
 
 class runner : public RunnerInterface {
   boost::asio::ip::address const address;
   unsigned short const port;
   int const threads;
 
-public:
+ public:
   runner(net::ip::address address, const unsigned int &port,
          const int &threads);
 
   void run() override;
 };
-
 
 #endif  // TECHPROJECT_RUNNER_H

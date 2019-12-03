@@ -5,10 +5,8 @@
 #ifndef TECHPROJECT_ROUTER_INTERFACE_H
 #define TECHPROJECT_ROUTER_INTERFACE_H
 
-
 class RouterInterface {
   virtual void routing() = 0;
 };
 
-
-#endif //TECHPROJECT_ROUTER_INTERFACE_H
+#endif  // TECHPROJECT_ROUTER_INTERFACE_H

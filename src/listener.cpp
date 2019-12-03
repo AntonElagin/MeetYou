@@ -7,7 +7,6 @@ listener::listener(net::io_context &_ioc, tcp::endpoint _endpoint)
 {
   beast::error_code ec;
 
-
   acceptor.open(_endpoint.protocol(), ec);
   if (ec) {
     fail(ec, "open");
@@ -54,5 +53,3 @@ void listener::on_accept(beast::error_code ec, tcp::socket socket) {
   // Принять другое соединение
   do_accept();
 }
-
-

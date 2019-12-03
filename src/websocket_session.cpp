@@ -1,4 +1,5 @@
 #include "../include/websocket_session.h"
+#include <boost/property_tree/ptree.hpp>
 
 websocket_session::websocket_session(tcp::socket &&socket)
     : ws_(std::move(socket)) {}

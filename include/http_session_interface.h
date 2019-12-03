@@ -9,4 +9,4 @@ class HttpSessionInterface {
   virtual void run() = 0;
 };
 
-#endif //TECHPROJECT_HTTP_SESSION_INTERFACE_H
+#endif  // TECHPROJECT_HTTP_SESSION_INTERFACE_H
