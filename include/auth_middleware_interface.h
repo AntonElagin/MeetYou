@@ -3,7 +3,7 @@
 
 class AuthMiddlewareInterface {
  public:
-  virtual bool is_Auth() = 0;
+  virtual bool isAuth() = 0;
 };
 
 #endif  // TECHPROJECT_AUTH_MIDDLEWARE_INTERFACE_H

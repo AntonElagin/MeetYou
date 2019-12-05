@@ -13,20 +13,22 @@
 template <class Send>
 void handle_request1(const http::request<http::string_body>& req, Send&& send) {
   boost::string_view st;
-  std::cout << req;
+  int c = 0;
+  for (auto a : req.target()) {
+    std::cout << ++c << " -> " << a << std::endl;
+  }
 
   //  st = req.at("Cookie");
   auto a = req.find("Cookie");
   http::response<http::string_body> res1;
   try {
-    sql::ResultSet* res;
     sql::Driver* driver = get_driver_instance();
     std::shared_ptr<sql::Connection> con(
         driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
     con->setSchema("MeetYou");
 
     AuthMiddleware authMiddleware(con, st);
-    authMiddleware.is_Auth();
+    authMiddleware.isAuth();
     ViewRegistration viewRegistration(req, con);
 
     res1 = viewRegistration.get();
@@ -151,3 +153,45 @@ void http_session::queue::operator()(
 }
 
 bool http_session::queue::is_full() const { return items.size() >= limit; }
+//
+// queue::queue(http_session& _self) : self(_self) {
+//  static_assert(limit > 0, "queue limit must be positive");
+//  items.reserve(limit);
+//}
+//
+// bool queue::on_write() {
+//  BOOST_ASSERT(!items.empty());
+//  auto const was_full = is_full();
+//  items.erase(items.begin());
+//  if (!items.empty()) (*items.front())();
+//  return was_full;
+//}
+//
+// template <bool isRequest, class Body, class Fields>
+// void queue::operator()(
+//    http::message<isRequest, Body, Fields>&& msg_) {
+//  // This holds a work item
+//  struct work_impl : work {
+//    http_session& self;
+//    http::message<isRequest, Body, Fields> msg;
+//
+//    work_impl(http_session& self, http::message<isRequest, Body, Fields>&&
+//    _msg)
+//        : self(self), msg(std::move(_msg)) {}
+//
+//    void operator()() {
+//      http::async_write(
+//          self.stream, msg,
+//          beast::bind_front_handler(&http_session::on_write,
+//                                    self.shared_from_this(), msg.need_eof()));
+//    }
+//  };
+//
+//  // Allocate and store the work
+//  items.push_back(boost::make_unique<work_impl>(self, std::move(msg_)));
+//
+//  // If there was no previous work, start this one
+//  if (items.size() == 1) (*items.front())();
+//}
+//
+// bool queue::is_full() const { return items.size() >= limit; }

@@ -12,9 +12,10 @@ class View {
  public:
   std::shared_ptr<sql::Connection> conn;
   http::request<http::string_body> req;
+  int userId;
 
   View(http::request<http::string_body> _req,
-       std::shared_ptr<sql::Connection> _conn);
+       std::shared_ptr<sql::Connection> _conn, int userId);
 
   virtual http::response<http::string_body> get() = 0;
   virtual http::response<http::string_body> post() = 0;

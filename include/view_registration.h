@@ -9,7 +9,7 @@
 class ViewRegistration : public View {
  public:
   ViewRegistration(const http::request<http::string_body> &_req,
-                   const std::shared_ptr<sql::Connection> &_conn);
+                   const std::shared_ptr<sql::Connection> &_conn, int _userId);
 
   http::response<http::string_body> get() override;
   http::response<http::string_body> post() override;

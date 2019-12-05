@@ -2,7 +2,7 @@
 
 #include <utility>
 
-bool AuthMiddleware::is_Auth() {
+bool AuthMiddleware::isAuth() {
   std::string c = cookies.to_string(), token;
   std::smatch iterator;
   std::regex rex("access_token=[^;]+");
@@ -17,29 +17,29 @@ bool AuthMiddleware::is_Auth() {
 
     std::shared_ptr<sql::ResultSet> result(st->executeQuery());
     while (result->next()) {
-      authUser = result->getInt('user_id');
+      authUser = result->getInt("user_id");
       return true;
     }
   }
   return false;
 }
 
-AuthMiddleware::AuthMiddleware(
-    std::shared_ptr<sql::Statement>& _stmt,
-    boost::beast::http::basic_string_body<char, std::char_traits<char>>& _req)
-    : cookie(_req), stmt(_stmt), authUser(-1) {}
-
-AuthMiddleware::AuthMiddleware(
-    std::shared_ptr<sql::Statement>& _stmt,
-    boost::beast::http::request<boost::beast::http::dynamic_body>& _req)
-    : req(_req), stmt(_stmt), authUser(-1) {}
-
-AuthMiddleware::AuthMiddleware(std::shared_ptr<sql::Statement>& _stmt,
-                               boost::string_view& _req)
-    : cookies(_req), stmt(_stmt), authUser(-1) {}
+// AuthMiddleware::AuthMiddleware(
+//    std::shared_ptr<sql::Statement>& _stmt,
+//    boost::beast::http::basic_string_body<char, std::char_traits<char>>& _req)
+//    : cookie(_req), stmt(_stmt), authUser(-1) {}
+//
+// AuthMiddleware::AuthMiddleware(
+//    std::shared_ptr<sql::Statement>& _stmt,
+//    boost::beast::http::request<boost::beast::http::dynamic_body>& _req)
+//    : req(_req), stmt(_stmt), authUser(-1) {}
+//
+// AuthMiddleware::AuthMiddleware(std::shared_ptr<sql::Statement>& _stmt,
+//                               boost::string_view& _req)
+//    : cookies(_req), stmt(_stmt), authUser(-1) {}
 
 AuthMiddleware::AuthMiddleware(std::shared_ptr<sql::Connection> _conn,
                                boost::string_view& _req)
     : conn(std::move(_conn)), cookies(_req), authUser(-1) {}
 
-int AuthMiddleware::get_user_id() { return authUser; }
+int AuthMiddleware::getUserId() { return authUser; }

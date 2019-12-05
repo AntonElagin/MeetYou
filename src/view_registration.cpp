@@ -186,8 +186,8 @@ http::response<http::string_body> ViewRegistration::put() {
 
 ViewRegistration::ViewRegistration(
     const http::request<http::string_body> &_req,
-    const std::shared_ptr<sql::Connection> &_conn)
-    : View(_req, _conn) {}
+    const std::shared_ptr<sql::Connection> &_conn, int _userId)
+    : View(_req, _conn, _userId) {}
 
 int ViewRegistration::returnUser(const std::string &password,
                                  const std::string &value) {
