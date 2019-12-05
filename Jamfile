@@ -1,0 +1,6 @@
+exe http-server-sync :
+    http_server_sync.cpp
+    :
+    <variant>coverage:<build>no
+    <variant>ubasan:<build>no
+    ;
