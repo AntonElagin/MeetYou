@@ -66,10 +66,6 @@ class http_session : public std::enable_shared_from_this<http_session>,
                 std::size_t bytes_transferred);
 
   void do_close();
-
-  template <class Body, class Allocator, class Send>
-  void handle_request(http::request<Body, http::basic_fields<Allocator>> &&req,
-                      Send &&send);
 };
 
 #endif  // TECHPROJECT_HTTP_SESSION_H

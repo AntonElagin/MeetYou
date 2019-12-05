@@ -6,13 +6,18 @@
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 #include "../include/auth_middleware.h"
+#include "../include/view_registration.h"
 #include "mysql_connection.h"
 #include "mysql_driver.h"
 
 template <class Send>
 void handle_request1(const http::request<http::string_body>& req, Send&& send) {
-  boost::string_view st = req.at("Cookie");
+  boost::string_view st;
+  std::cout << req;
 
+  //  st = req.at("Cookie");
+  auto a = req.find("Cookie");
+  http::response<http::string_body> res1;
   try {
     sql::ResultSet* res;
     sql::Driver* driver = get_driver_instance();
@@ -22,22 +27,15 @@ void handle_request1(const http::request<http::string_body>& req, Send&& send) {
 
     AuthMiddleware authMiddleware(con, st);
     authMiddleware.is_Auth();
+    ViewRegistration viewRegistration(req, con);
 
-    ViewRegistration reg(req, con);
-    reg.get();
+    res1 = viewRegistration.get();
+
   } catch (sql::SQLException& e) {
     std::cout << e.what() << std::endl << "kek";
   }
   // Respond to GET request
   std::string body;
-  body = "queasiness's";
-  http::response<http::string_body> res1{
-      std::piecewise_construct, std::make_tuple(body),
-      std::make_tuple(http::status::ok, req.version())};
-  res1.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-  res1.set(http::field::content_type, "application/json");
-  res1.content_length(body.size());
-  res1.keep_alive(req.keep_alive());
   return send(std::move(res1));
 }
 
@@ -111,40 +109,6 @@ void http_session::do_close() {
   // Отправляем завершение работы
   beast::error_code ec;
   stream.socket().shutdown(tcp::socket::shutdown_send, ec);
-}
-
-template <class Body, class Allocator, class Send>
-void http_session::handle_request(
-    http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send) {
-  boost::string_view st = req.at("Cookie");
-
-  try {
-    sql::ResultSet* res;
-    sql::Driver* driver = get_driver_instance();
-    std::shared_ptr<sql::Connection> con(
-        driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
-    con->setSchema("MeetYou");
-
-    AuthMiddleware authMiddleware(con, st);
-    authMiddleware.is_Auth();
-
-    //    ViewRegistration<Body, Allocator> reg(req, con);
-    //    reg.get();
-  } catch (sql::SQLException& e) {
-    std::cout << e.what() << std::endl << "kek";
-  }
-
-  // Respond to GET request
-  std::string body;
-  body = "queasiness's";
-  http::response<http::string_body> res1{
-      std::piecewise_construct, std::make_tuple(body),
-      std::make_tuple(http::status::ok, req.version())};
-  res1.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-  res1.set(http::field::content_type, "application/json");
-  res1.content_length(body.size());
-  res1.keep_alive(req.keep_alive());
-  return send(std::move(res1));
 }
 
 http_session::queue::queue(http_session& _self) : self(_self) {
