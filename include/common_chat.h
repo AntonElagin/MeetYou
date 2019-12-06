@@ -4,14 +4,15 @@
 #include <boost/beast.hpp>
 #include <regex>
 #include <memory>
-#include <cppconn/connection.h>
 #include <boost/beast.hpp>
 #include <utility>
 #include "json.hpp"
 #include "view.h"
 
+
 namespace http = boost::beast::http;
 
+using json=nlohmann::json;
 
 class ViewChatCommon : public View {
 public:

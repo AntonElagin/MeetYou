@@ -1,9 +1,14 @@
 #ifndef PLUS_PROJECT_VIEW_H
 #define PLUS_PROJECT_VIEW_H
 
+#include <cppconn/driver.h>
+#include <cppconn/exception.h>
+#include <cppconn/resultset.h>
+#include <cppconn/statement.h>
 #include <cppconn/connection.h>
 #include <boost/beast.hpp>
 #include <utility>
+#include <memory>
 
 namespace http = boost::beast::http;
 
