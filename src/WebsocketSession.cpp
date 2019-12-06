@@ -29,21 +29,21 @@ WebsocketSession::WebsocketSession(tcp::socket &&socket)
 //                    shared_from_this()));
 //}
 
-void WebsocketSession::on_accept(beast::error_code ec) {
+void WebsocketSession::onAccept(beast::error_code ec) {
   if (ec) return fail(ec, "accept");
 
   // Read a message
-  do_read();
+  doRead();
 }
 
-void WebsocketSession::do_read() {
+void WebsocketSession::doRead() {
   // Read a message into our buffer
-  ws_.async_read(buffer_, beast::bind_front_handler(&WebsocketSession::on_read,
+  ws_.async_read(buffer_, beast::bind_front_handler(&WebsocketSession::onRead,
                                                     shared_from_this()));
 }
 
-void WebsocketSession::on_read(beast::error_code ec,
-                               std::size_t bytes_transferred) {
+void WebsocketSession::onRead(beast::error_code ec,
+                              std::size_t bytes_transferred) {
   boost::ignore_unused(bytes_transferred);
 
   // This indicates that the WebsocketSession was closed
@@ -54,12 +54,12 @@ void WebsocketSession::on_read(beast::error_code ec,
   // Echo the message
   ws_.text(ws_.got_text());
   ws_.async_write(buffer_.data(),
-                  beast::bind_front_handler(&WebsocketSession::on_write,
+                  beast::bind_front_handler(&WebsocketSession::onWrite,
                                             shared_from_this()));
 }
 
-void WebsocketSession::on_write(beast::error_code ec,
-                                std::size_t bytes_transferred) {
+void WebsocketSession::onWrite(beast::error_code ec,
+                               std::size_t bytes_transferred) {
   boost::ignore_unused(bytes_transferred);
 
   if (ec) return fail(ec, "write");
@@ -68,5 +68,5 @@ void WebsocketSession::on_write(beast::error_code ec,
   buffer_.consume(buffer_.size());
 
   // Do another read
-  do_read();
+  doRead();
 }

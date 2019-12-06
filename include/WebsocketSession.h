@@ -36,19 +36,18 @@ class WebsocketSession : public std::enable_shared_from_this<WebsocketSession> {
         }));
 
     // Accept the websocket handshake
-    ws_.async_accept(req,
-                     beast::bind_front_handler(&WebsocketSession::on_accept,
-                                               shared_from_this()));
+    ws_.async_accept(req, beast::bind_front_handler(&WebsocketSession::onAccept,
+                                                    shared_from_this()));
   }
 
  private:
-  void on_accept(beast::error_code ec);
+  void onAccept(beast::error_code ec);
 
-  void do_read();
+  void doRead();
 
-  void on_read(beast::error_code ec, std::size_t bytes_transferred);
+  void onRead(beast::error_code ec, std::size_t bytes_transferred);
 
-  void on_write(beast::error_code ec, std::size_t bytes_transferred);
+  void onWrite(beast::error_code ec, std::size_t bytes_transferred);
 };
 
 //------------------------------------------------------------------------------

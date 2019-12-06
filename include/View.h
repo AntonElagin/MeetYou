@@ -9,13 +9,14 @@ namespace http = boost::beast::http;
 
 // template <class Body, class Allocator>
 class View {
- public:
+ protected:
   std::shared_ptr<sql::Connection> conn;
   http::request<http::string_body> req;
   int userId;
 
-  View(http::request<http::string_body> _req,
-       std::shared_ptr<sql::Connection> _conn, int userId);
+ public:
+  View(http::request<string_body> _req, std::shared_ptr<Connection> _conn,
+       int _userId);
 
   virtual http::response<http::string_body> get() = 0;
   virtual http::response<http::string_body> post() = 0;

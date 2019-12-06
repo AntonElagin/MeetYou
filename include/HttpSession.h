@@ -34,7 +34,7 @@ struct Work {
 //
 //  bool is_full() const;
 //
-//  bool on_write();
+//  bool onWrite();
 //
 //  // Вызывается обработчиком HTTP для отправки ответа.
 //  template <bool isRequest, class Body, class Fields>
@@ -56,7 +56,7 @@ class HttpSession : public std::enable_shared_from_this<HttpSession>,
 
    public:
     explicit queue(HttpSession &_self);
-
+    queue();
     bool is_full() const;
 
     bool on_write();
@@ -80,14 +80,13 @@ class HttpSession : public std::enable_shared_from_this<HttpSession>,
   void run() override;
 
  private:
-  void do_read();
+  void doRead();
 
-  void on_read(beast::error_code ec, std::size_t bytes_transferred);
+  void onRead(beast::error_code ec, std::size_t bytes_transferred);
 
-  void on_write(bool close, beast::error_code ec,
-                std::size_t bytes_transferred);
+  void onWrite(bool close, beast::error_code ec, std::size_t bytes_transferred);
 
-  void do_close();
+  void doClose();
 };
 
 #endif  // TECHPROJECT_HTTPSESSION_H

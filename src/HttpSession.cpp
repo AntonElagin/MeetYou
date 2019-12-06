@@ -35,9 +35,9 @@
 HttpSession::HttpSession(tcp::socket&& socket)
     : stream(std::move(socket)), queue(*this) {}
 
-void HttpSession::run() { do_read(); }
+void HttpSession::run() { doRead(); }
 
-void HttpSession::do_read() {
+void HttpSession::doRead() {
   // синтаксический анализатор для каждого сообщения
   parser.emplace();
 
@@ -50,13 +50,13 @@ void HttpSession::do_read() {
   // Читаем запрос с помощью парсера
   http::async_read(
       stream, buffer, *parser,
-      beast::bind_front_handler(&HttpSession::on_read, shared_from_this()));
+      beast::bind_front_handler(&HttpSession::onRead, shared_from_this()));
 }
 
-void HttpSession::on_read(beast::error_code ec, std::size_t bytes_transferred) {
+void HttpSession::onRead(beast::error_code ec, std::size_t bytes_transferred) {
   boost::ignore_unused(bytes_transferred);
 
-  if (ec == http::error::end_of_stream) return do_close();
+  if (ec == http::error::end_of_stream) return doClose();
 
   if (ec) return fail(ec, "read");
 
@@ -78,28 +78,28 @@ void HttpSession::on_read(beast::error_code ec, std::size_t bytes_transferred) {
 
   // Если мы не находимся на пределе очереди, попробуйте передать другой запрос
   // по конвейеру
-  if (!queue.is_full()) do_read();
+  if (!queue.is_full()) doRead();
 }
 
-void HttpSession::on_write(bool close, beast::error_code ec,
-                           std::size_t bytes_transferred) {
+void HttpSession::onWrite(bool close, beast::error_code ec,
+                          std::size_t bytes_transferred) {
   boost::ignore_unused(bytes_transferred);
 
   if (ec) return fail(ec, "write");
 
   if (close) {
     // Закрываяем соединение
-    return do_close();
+    return doClose();
   }
 
   // Inform the queue that a write completed
   if (queue.on_write()) {
     // Read another request
-    do_read();
+    doRead();
   }
 }
 
-void HttpSession::do_close() {
+void HttpSession::doClose() {
   // Отправляем завершение работы
   beast::error_code ec;
   stream.socket().shutdown(tcp::socket::shutdown_send, ec);
@@ -136,7 +136,7 @@ void HttpSession::queue::operator()(
     void operator()() {
       http::async_write(
           self.stream, msg,
-          beast::bind_front_handler(&HttpSession::on_write,
+          beast::bind_front_handler(&HttpSession::onWrite,
                                     self.shared_from_this(), msg.need_eof()));
     }
   };
@@ -150,6 +150,8 @@ void HttpSession::queue::operator()(
 
 bool HttpSession::queue::is_full() const { return items.size() >= limit; }
 
+HttpSession::queue::queue() {}
+
 //////////////////////////////////////////////////////////////////////////////
 //
 //
@@ -160,7 +162,7 @@ bool HttpSession::queue::is_full() const { return items.size() >= limit; }
 //}
 //
 // template <class HttpSession>
-// bool Queue<HttpSession>::on_write() {
+// bool Queue<HttpSession>::onWrite() {
 //  BOOST_ASSERT(!items.empty());
 //  auto const was_full = is_full();
 //  items.erase(items.begin());
@@ -184,7 +186,7 @@ bool HttpSession::queue::is_full() const { return items.size() >= limit; }
 //    void operator()() {
 //      http::async_write(
 //          self.getStream(), msg,
-//          beast::bind_front_handler(&HttpSession::on_write,
+//          beast::bind_front_handler(&HttpSession::onWrite,
 //                                    self.shared_from_this(), msg.need_eof()));
 //    }
 //  };

@@ -35,15 +35,15 @@ Listener::Listener(net::io_context &_ioc, tcp::endpoint _endpoint)
   }
 }
 
-void Listener::run() { do_accept(); }
+void Listener::run() { doAccept(); }
 
-void Listener::do_accept() {
+void Listener::doAccept() {
   acceptor.async_accept(
       net::make_strand(ioc),
-      beast::bind_front_handler(&Listener::on_accept, shared_from_this()));
+      beast::bind_front_handler(&Listener::onAccept, shared_from_this()));
 }
 
-void Listener::on_accept(beast::error_code ec, tcp::socket socket) {
+void Listener::onAccept(beast::error_code ec, tcp::socket socket) {
   if (ec) {
     fail(ec, "accept");
   } else {
@@ -51,5 +51,5 @@ void Listener::on_accept(beast::error_code ec, tcp::socket socket) {
     std::make_shared<HttpSession>(std::move(socket))->run();
   }
   // Принять другое соединение
-  do_accept();
+  doAccept();
 }

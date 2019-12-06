@@ -13,7 +13,7 @@ class MD5 {
   typedef unsigned int size_type;  // must be 32bit
 
   MD5();
-  MD5(const std::string &text);
+  explicit MD5(const std::string &text);
   void update(const unsigned char *buf, size_type length);
   void update(const char *buf, size_type length);
   MD5 &finalize();
@@ -52,6 +52,6 @@ class MD5 {
                         uint4 ac);
 };
 
-std::string md5(const std::string str);
+std::string md5(const std::string &str);
 
 #endif  // TECHPROJECT_MD5_H

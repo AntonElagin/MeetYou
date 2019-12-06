@@ -25,9 +25,9 @@ class Listener : public std::enable_shared_from_this<Listener>, IListener {
   void run() override;
 
  private:
-  void do_accept();
+  void doAccept();
 
-  void on_accept(beast::error_code ec, tcp::socket socket);
+  void onAccept(beast::error_code ec, tcp::socket socket);
 };
 
 //------------------------------------------------------------------------------
