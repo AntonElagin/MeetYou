@@ -15,6 +15,7 @@
 #include <cppconn/statement.h>
 #include "router.h"
 #include "connector.h"
+#include "req_parser.h"
 
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>
@@ -82,14 +83,14 @@ handle_request(beast::string_view doc_root, http::request<Body, http::basic_fiel
     std::string result_body;
     //////////////////////////////
     Connector conn("tcp://127.0.0.1:3306", "root", "167839", "meetyou");
-    ///path is url from request,
-    if (req.method() == http::verb::post)
-        path += "?" + req.body();
-    Chat_router router;
-    IObjHandler *handler = router.parse(path);
-    handler->set_bd_connector(&conn);
-    handler->choicer();
-    string tempstr;
+    Request_parser parser(2, req);
+//    if (req.method() == http::verb::post)
+//        path += "?" + req.body();
+//    Chat_router router;
+//    IObjHandler *handler = router.parse(path);
+//    handler->set_bd_connector(&conn);
+//    handler->choicer();
+//    string tempstr;
     ////////////////////////////////////////////////////
     http::response<http::string_body> res{http::status::ok, req.version()};
     res.set(http::field::server, BOOST_BEAST_VERSION_STRING);

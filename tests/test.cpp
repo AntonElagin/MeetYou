@@ -1,75 +1,72 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "../include/chat.h"
-#include "../include/accept_actions.h"
-#include "../include/basic_classes.h"
-#include "../include/creator_fabr_method.h"
-#include "../include/handler_classes.h"
-#include "../include/router.h"
-#include "../include/validator.h"
+#include "basic_classes.h"
+#include "handler_classes.h"
+#include "req_parser.h"
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/config.hpp>
 #include <string>
+#include "common_chat.h"
+#include <cppconn/connection.h>
 
 using ::testing::Return;
 using ::testing::_;
 using tcp = boost::asio::ip::tcp;
 namespace http = boost::beast::http;
 
-class MockRouter : public Router {
-public:
-    //MOCK_METHOD(int, parse,(string request), (override);
-    MOCK_METHOD1(parse, int(string
-            request));
+class QuickTest : public testing::Test {
+protected:
+    void SetUp() override {
+        req.version(11);
+        req.method(http::verb::post);
+        req.target("/chat/history");
+        req.set(http::field::user_agent, "test");
+        req.set(http::field::host, "localhost");
+        req.body() = "{\n"
+                     "  \"members_list\": [\n"
+                     "    1,\n"
+                     "    2,\n"
+                     "    3,\n"
+                     "    5,\n"
+                     "    20\n"
+                     "  ],\n"
+                     "  \"admin_list\": [\n"
+                     "    4,\n"
+                     "    7\n"
+                     "  ],\n"
+                     "  \"title\": \"somechat\"\n"
+                     "}";
+        req.prepare_payload();
+        driver = get_driver_instance();
+        shared_ptr<sql::Connection> conn(driver->connect("tcp://127.0.0.1:3306", "root", "167839"));
+        con = conn;
+        con->setSchema("meetyou");
 
+    }
+
+
+    void TearDown() override {
+    }
+
+    sql::Driver *driver;
+    shared_ptr<sql::Connection> con;
+    shared_ptr<sql::ResultSet> res;
+    http::request<http::string_body> req;
 };
 
-class MockChat {
-public:
-    MOCK_METHOD0(gethistory, vector<IObject>*());
-};
-
-
-TEST(chat_validate_test, call_validate) {
-    MockRouter router;
-    EXPECT_CALL(router, parse("somestring"))
-            .Times(testing::AtLeast(1));
-
+TEST_F(QuickTest, requests) {
+    int id = 2;
+    ViewChatCommon view_chat(req, con, id);
+    auto kek = view_chat.post();
+    boost::string_view heh = kek.body();
+    ASSERT_STREQ(heh.to_string().c_str(), "{\"message\":\"OK\",\"status\":200}");
 }
-
-TEST(chat_call, get_people) {
-    MockChat chat;
-    EXPECT_CALL(chat, gethistory()).Times(0);
-
-}
-
-TEST(chat_validate_test, validate) {
-    DataValidator validator;
-    vector<string> some_parsed_string = {"get", "chat", "566", "history"};
-    EXPECT_TRUE(validator.validate(some_parsed_string));
-}
-
-TEST(chat_get_people, online_chat) {
-    OnlineChat chat;
-    shared_ptr<vector<int>> people = chat.getpeople();
-    vector<int> some_people_id = {1, 5, 12, 30, 45};
-    EXPECT_EQ(*people, some_people_id);
-}
-
-TEST(chat_history, get_history) {
-    HistoryChat<Message> historychat(new OfflineChat);
-    Message mes1, mes2;
-    vector<Message> hist2 = {mes1, mes2};
-
-    EXPECT_EQ(historychat.get_history(), hist2);
-}
-
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
-    ::testing::InitGoogleMock(&argc, argv);
+    //::testing::InitGoogleMock(&argc, argv);
     return RUN_ALL_TESTS();
 }

@@ -80,12 +80,10 @@ std::string MessageHandler::add() {
     int author_id = std::stoi(params_list.back());///id from anton
     pstmt = con->prepareStatement(
             "insert into Message (id, publication_date, body, author_id, chat_id) values (null, CURDATE(), ?, ?, ?)");
-    for (int i = 1; i <= 4; i++) {
-        pstmt->setInt(2, i);//set author id
-        pstmt->setInt(3, std::stoi(params_list.back()));///set chat id
-        pstmt->setString(1, params_list[3]);///setbody
-        pstmt->executeUpdate();
-    }
+    pstmt->setInt(2, 1);//set author id
+    pstmt->setInt(3, std::stoi(params_list.back()));///set chat id
+    pstmt->setString(1, params_list[3]);///setbody
+    pstmt->executeUpdate();
     delete pstmt;
     return "ok, message with body " + params_list[3] + ", to chatid=" + params_list.back() + "is added";
 }
@@ -94,8 +92,7 @@ std::string MessageHandler::update() {
     sql::Connection *con = connector->get_con();
     sql::ResultSet *res;
     sql::PreparedStatement *pstmt;
-    pstmt = con->prepareStatement(
-            "delete from message where id=?");
+    pstmt = con->prepareStatement("delete from message where id=?");
     pstmt->setInt(1, std::stoi(params_list.back()));
     pstmt->executeUpdate();
     delete pstmt;
@@ -104,7 +101,6 @@ std::string MessageHandler::update() {
 
 std::string MessageHandler::del() {
     sql::Connection *con = connector->get_con();
-    sql::ResultSet *res;
     sql::PreparedStatement *pstmt;
     pstmt = con->prepareStatement(
             "delete from Message where id=?");
@@ -116,16 +112,32 @@ std::string MessageHandler::del() {
 
 
 std::string UserHandler::add() {
-
-    return "";
+    sql::Connection *con = connector->get_con();
+    sql::PreparedStatement *pstmt;
+    pstmt = con->prepareStatement(
+            "INSERT INTO `meetyou`.`result_table` (`chat_id`, `user_id`, `is_admin`) VALUES (?, ?, 0)");
+    pstmt->setInt(1, std::stoi(params_list[5]));//chatid
+    pstmt->setInt(2, std::stoi(params_list[3]));//userid
+    pstmt->executeUpdate();
+    delete pstmt;
+    return "ok";
 }
 
 std::string UserHandler::update() {
+
     return "";
 }
 
 std::string UserHandler::del() {
-    return "";
+    sql::Connection *con = connector->get_con();
+    sql::PreparedStatement *pstmt;
+    pstmt = con->prepareStatement(
+            "DELETE FROM `meetyou`.`result_table` WHERE `chat_id` = ? AND `user_id` = ?");
+    pstmt->setInt(1, std::stoi(params_list[5]));//chatid
+    pstmt->setInt(2, std::stoi(params_list[3]));//userid
+    pstmt->executeUpdate();
+    delete pstmt;
+    return "ok";
 }
 
 std::string IObjHandler::choicer() {
