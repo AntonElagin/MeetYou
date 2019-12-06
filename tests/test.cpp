@@ -9,8 +9,9 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/config.hpp>
 #include <string>
-#include "common_chat.h"
 #include <cppconn/connection.h>
+#include "common_chat.h"
+#include "message_chat_view.h"
 
 using ::testing::Return;
 using ::testing::_;
@@ -100,6 +101,19 @@ TEST_F(QuickTest, members_list) {
     boost::string_view heh = kek.body();
     ASSERT_STREQ(heh.to_string().c_str(),
                  "{\"content\":[[2,\"Cchaddie Disdel\"],[3,\"Maxine Fanthome\"],[4,\"Elijah Attwell\"]],\"message\":\"OK\",\"status\":200}");
+}
+
+TEST_F(QuickTest, chat_view) {
+    int id = 2;
+    req.body() = "{\n"
+                 "  \"chatid\": 1,\n"
+                 "  \"search_data\": \"members_list\"\n"
+                 "}";
+    Message_chat_view view_mesage(req, con, id);
+//    auto kek = view_chat.get();
+//    boost::string_view heh = kek.body();
+//    ASSERT_STREQ(heh.to_string().c_str(),
+//                 "{\"content\":[[2,\"Cchaddie Disdel\"],[3,\"Maxine Fanthome\"],[4,\"Elijah Attwell\"]],\"message\":\"OK\",\"status\":200}");
 }
 
 int main(int argc, char **argv) {
