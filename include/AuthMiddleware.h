@@ -10,7 +10,6 @@
 #include "IAuthMiddleware.h"
 #include "Md5.h"
 
-//#include <char_traits>
 class AuthMiddleware : public IAuthMiddleware {
  public:
   AuthMiddleware(

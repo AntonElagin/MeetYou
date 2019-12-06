@@ -29,7 +29,7 @@ set(ALL_SOURCES
         ${SRC_DIR}/main.cpp
         ${SRC_DIR}/Listener.cpp
         ${SRC_DIR}/View.cpp
-        ${SRC_DIR}/Runner.cpp)
+        ${SRC_DIR}/Runner.cpp src/Queue.cpp src/ViewOther.cpp)
 set(ALL_HEADERS
         ${INC_DIR}/Router.h
         ${INC_DIR}/Md5.h
@@ -45,7 +45,7 @@ set(ALL_HEADERS
         ${INC_DIR}/IHttpSession.h
         ${INC_DIR}/IWebsocketSession.h
         ${INC_DIR}/AuthMiddleware.h
-        ${INC_DIR}/IAuthMiddleware.h)
+        ${INC_DIR}/IAuthMiddleware.h include/Queue.h include/Work.h include/ViewOther.h)
 
 
 find_package (Boost REQUIRED COMPONENTS system filesystem)

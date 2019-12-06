@@ -1,7 +1,3 @@
-//
-// Created by anton on 03.12.2019.
-//
-
 #ifndef TECHPROJECT_ROUTER_H
 #define TECHPROJECT_ROUTER_H
 
@@ -9,10 +5,12 @@
 #include <cppconn/driver.h>
 #include <boost/beast.hpp>
 #include <regex>
+#include <set>
 #include <unordered_map>
 #include <utility>
 #include "AuthMiddleware.h"
 #include "View.h"
+#include "ViewOther.h"
 #include "ViewRegistration.h"
 
 namespace http = boost::beast::http;
@@ -24,6 +22,7 @@ class Router {
   int userId;
   // Таблица для проверки необходимости авторизации при get запросе
   std::unordered_map<std::string, bool> authGetMap;
+  std::set<std::string> routeList = {"/auth", "/user", "/event"};
 
   std::unique_ptr<View> getView(const std::string& path);
 
@@ -50,23 +49,29 @@ void Router::startRouting(Send&& send) {
   std::string target = req.target().to_string();
   if (std::regex_search(target, iterator, reg)) {
     std::string path(iterator.str());
-    if (req.method_string() == "get") {
-      if (authGetMap[path]) {
-        if (!authFlag) return send(authException());
-      }
+    std::cout << req.method_string() << std::endl;
+    if (req.method_string() == "GET") {
+      if (authGetMap.find(path) != authGetMap.end())
+        if (authGetMap[path]) {
+          if (!authFlag) return send(authException());
+        }
       controller = getView(path);
       return send(std::move(controller->get()));
-    } else if (req.method_string() == "post" && authFlag) {
+    } else if (req.method_string() == "POST" &&
+               (authFlag || path == "/auth" ||
+                authGetMap.find(path) == authGetMap.end())) {
       controller = getView(path);
       return send(std::move(controller->post()));
-    } else if (req.method_string() == "put" && authFlag) {
+    } else if (req.method_string() == "PUT" &&
+               (authFlag || authGetMap.find(path) == authGetMap.end())) {
       controller = getView(path);
       return send(std::move(controller->put()));
-    } else if (req.method_string() == "delete" && authFlag) {
+    } else if (req.method_string() == "DELETE" &&
+               (authFlag || authGetMap.find(path) == authGetMap.end())) {
       controller = getView(path);
       return send(std::move(controller->delete_()));
     }
-    if (!authFlag) {
+    if (!authFlag && authGetMap.find(path) != authGetMap.end()) {
       return send(std::move(authException()));
     }
     return send(std::move(methodException()));

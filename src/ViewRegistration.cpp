@@ -21,9 +21,7 @@ bool ViewRegistration::isEmail(const std::string &value) {
 }
 
 http::response<http::string_body> ViewRegistration::delete_() {
-  boost::beast::http::response<http::string_body> res;
-
-  return res;
+  return defaultPlug();
 }
 
 http::response<http::string_body> ViewRegistration::post() {
@@ -179,8 +177,7 @@ http::response<http::string_body> ViewRegistration::get() {
 }
 
 http::response<http::string_body> ViewRegistration::put() {
-  boost::beast::http::response<http::string_body> res;
-  return res;
+  return defaultPlug();
 }
 
 ViewRegistration::ViewRegistration(

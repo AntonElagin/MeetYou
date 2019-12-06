@@ -3,6 +3,7 @@
 
 #include <cppconn/connection.h>
 #include <boost/beast.hpp>
+#include <nlohmann/json.hpp>
 #include <utility>
 
 namespace http = boost::beast::http;
@@ -13,10 +14,11 @@ class View {
   std::shared_ptr<sql::Connection> conn;
   http::request<http::string_body> req;
   int userId;
+  http::response<http::string_body> defaultPlug();
 
  public:
-  View(http::request<string_body> _req, std::shared_ptr<Connection> _conn,
-       int _userId);
+  View(http::request<http::string_body> _req,
+       std::shared_ptr<sql::Connection> _conn, int _userId);
 
   virtual http::response<http::string_body> get() = 0;
   virtual http::response<http::string_body> post() = 0;
