@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
-#include "../include/runner.h"
+#include "Runner.h"
 
 int main(int argc, char* argv[]) {
   if (argc != 4) {
@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
   auto port = static_cast<unsigned short>(std::atoi(argv[2]));
   int threads = std::max<int>(1, std::atoi(argv[3]));
 
-  runner serv(address, port, threads);
+  Runner serv(address, port, threads);
   serv.run();
 
   return EXIT_SUCCESS;

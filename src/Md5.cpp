@@ -1,8 +1,4 @@
-//
-// Created by anton on 03.12.2019.
-//
-
-#include "../include/md5.h"
+#include "Md5.h"
 #include <cstdio>
 
 // Constants for MD5Transform routine.

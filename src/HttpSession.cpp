@@ -1,37 +1,26 @@
-#include "../include/http_session.h"
-
+#include "HttpSession.h"
 #include <cppconn/connection.h>
 #include <cppconn/driver.h>
 #include <cppconn/exception.h>
 #include <cppconn/resultset.h>
-#include <cppconn/statement.h>
-#include "../include/auth_middleware.h"
-#include "../include/view_registration.h"
-#include "mysql_connection.h"
+#include "AuthMiddleware.h"
 #include "mysql_driver.h"
 
 template <class Send>
 void handle_request1(const http::request<http::string_body>& req, Send&& send) {
   boost::string_view st;
-  int c = 0;
-  for (auto a : req.target()) {
-    std::cout << ++c << " -> " << a << std::endl;
-  }
+  sql::Driver* driver = get_driver_instance();
+  std::shared_ptr<sql::Connection> con(
+      driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
+  con->setSchema("MeetYou");
+  AuthMiddleware authMiddleware(con, req);
+  authMiddleware.isAuth();
 
-  //  st = req.at("Cookie");
-  auto a = req.find("Cookie");
   http::response<http::string_body> res1;
   try {
-    sql::Driver* driver = get_driver_instance();
-    std::shared_ptr<sql::Connection> con(
-        driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
-    con->setSchema("MeetYou");
+    //    ViewRegistration viewRegistration(req, con);
 
-    AuthMiddleware authMiddleware(con, st);
-    authMiddleware.isAuth();
-    ViewRegistration viewRegistration(req, con);
-
-    res1 = viewRegistration.get();
+    //    res1 = viewRegistration.get();
 
   } catch (sql::SQLException& e) {
     std::cout << e.what() << std::endl << "kek";
@@ -41,12 +30,12 @@ void handle_request1(const http::request<http::string_body>& req, Send&& send) {
   return send(std::move(res1));
 }
 
-http_session::http_session(tcp::socket&& socket)
+HttpSession::HttpSession(tcp::socket&& socket)
     : stream(std::move(socket)), queue(*this) {}
 
-void http_session::run() { do_read(); }
+void HttpSession::run() { do_read(); }
 
-void http_session::do_read() {
+void HttpSession::do_read() {
   // синтаксический анализатор для каждого сообщения
   parser.emplace();
 
@@ -59,11 +48,10 @@ void http_session::do_read() {
   // Читаем запрос с помощью парсера
   http::async_read(
       stream, buffer, *parser,
-      beast::bind_front_handler(&http_session::on_read, shared_from_this()));
+      beast::bind_front_handler(&HttpSession::on_read, shared_from_this()));
 }
 
-void http_session::on_read(beast::error_code ec,
-                           std::size_t bytes_transferred) {
+void HttpSession::on_read(beast::error_code ec, std::size_t bytes_transferred) {
   boost::ignore_unused(bytes_transferred);
 
   if (ec == http::error::end_of_stream) return do_close();
@@ -74,7 +62,7 @@ void http_session::on_read(beast::error_code ec,
   if (websocket::is_upgrade(parser->get())) {
     // Создание сеанса websocket, передача прав на
     //  сокет и HTTP-запрос.
-    std::make_shared<websocket_session>(stream.release_socket())
+    std::make_shared<WebsocketSession>(stream.release_socket())
         ->do_accept(parser->release());
     return;
   }
@@ -89,8 +77,8 @@ void http_session::on_read(beast::error_code ec,
   if (!queue.is_full()) do_read();
 }
 
-void http_session::on_write(bool close, beast::error_code ec,
-                            std::size_t bytes_transferred) {
+void HttpSession::on_write(bool close, beast::error_code ec,
+                           std::size_t bytes_transferred) {
   boost::ignore_unused(bytes_transferred);
 
   if (ec) return fail(ec, "write");
@@ -107,18 +95,18 @@ void http_session::on_write(bool close, beast::error_code ec,
   }
 }
 
-void http_session::do_close() {
+void HttpSession::do_close() {
   // Отправляем завершение работы
   beast::error_code ec;
   stream.socket().shutdown(tcp::socket::shutdown_send, ec);
 }
 
-http_session::queue::queue(http_session& _self) : self(_self) {
+HttpSession::queue::queue(HttpSession& _self) : self(_self) {
   static_assert(limit > 0, "queue limit must be positive");
   items.reserve(limit);
 }
 
-bool http_session::queue::on_write() {
+bool HttpSession::queue::on_write() {
   BOOST_ASSERT(!items.empty());
   auto const was_full = is_full();
   items.erase(items.begin());
@@ -127,20 +115,20 @@ bool http_session::queue::on_write() {
 }
 
 template <bool isRequest, class Body, class Fields>
-void http_session::queue::operator()(
+void HttpSession::queue::operator()(
     http::message<isRequest, Body, Fields>&& msg_) {
   // This holds a work item
-  struct work_impl : work {
-    http_session& self;
+  struct work_impl : Work {
+    HttpSession& self;
     http::message<isRequest, Body, Fields> msg;
 
-    work_impl(http_session& self, http::message<isRequest, Body, Fields>&& _msg)
+    work_impl(HttpSession& self, http::message<isRequest, Body, Fields>&& _msg)
         : self(self), msg(std::move(_msg)) {}
 
     void operator()() {
       http::async_write(
           self.stream, msg,
-          beast::bind_front_handler(&http_session::on_write,
+          beast::bind_front_handler(&HttpSession::on_write,
                                     self.shared_from_this(), msg.need_eof()));
     }
   };
@@ -152,9 +140,9 @@ void http_session::queue::operator()(
   if (items.size() == 1) (*items.front())();
 }
 
-bool http_session::queue::is_full() const { return items.size() >= limit; }
+bool HttpSession::queue::is_full() const { return items.size() >= limit; }
 //
-// queue::queue(http_session& _self) : self(_self) {
+// queue::queue(HttpSession& _self) : self(_self) {
 //  static_assert(limit > 0, "queue limit must be positive");
 //  items.reserve(limit);
 //}
@@ -172,17 +160,17 @@ bool http_session::queue::is_full() const { return items.size() >= limit; }
 //    http::message<isRequest, Body, Fields>&& msg_) {
 //  // This holds a work item
 //  struct work_impl : work {
-//    http_session& self;
+//    HttpSession& self;
 //    http::message<isRequest, Body, Fields> msg;
 //
-//    work_impl(http_session& self, http::message<isRequest, Body, Fields>&&
+//    work_impl(HttpSession& self, http::message<isRequest, Body, Fields>&&
 //    _msg)
 //        : self(self), msg(std::move(_msg)) {}
 //
 //    void operator()() {
 //      http::async_write(
 //          self.stream, msg,
-//          beast::bind_front_handler(&http_session::on_write,
+//          beast::bind_front_handler(&HttpSession::on_write,
 //                                    self.shared_from_this(), msg.need_eof()));
 //    }
 //  };

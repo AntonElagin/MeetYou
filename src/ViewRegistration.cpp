@@ -1,10 +1,9 @@
-#include "../include/view_registration.h"
+#include "ViewRegistration.h"
 #include <cppconn/connection.h>
-#include <cppconn/datatype.h>
 #include <cppconn/exception.h>
 #include <cppconn/prepared_statement.h>
 #include <cppconn/resultset.h>
-#include "../include/md5.h"
+#include "Md5.h"
 
 bool ViewRegistration::isPassword(const std::string &value) {
   return value.size() > 6 && value.size() < 20;

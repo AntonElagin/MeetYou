@@ -3,8 +3,8 @@
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
-#include "http_session.h"
-#include "listener_interfece.h"
+#include "HttpSession.h"
+#include "IListener.h"
 //#include "fail.h"
 namespace beast = boost::beast;
 namespace http = boost::beast::http;
@@ -15,13 +15,12 @@ using tcp = boost::asio::ip::tcp;
 //------------------------------------------------------------------------------
 
 // Принимает входящие соединения и запускает сеансы
-class listener : public std::enable_shared_from_this<listener>,
-                 ListenerInterface {
+class Listener : public std::enable_shared_from_this<Listener>, IListener {
   net::io_context &ioc;
   tcp::acceptor acceptor;
 
  public:
-  listener(net::io_context &_ioc, tcp::endpoint _endpoint);
+  Listener(net::io_context &_ioc, tcp::endpoint _endpoint);
 
   void run() override;
 

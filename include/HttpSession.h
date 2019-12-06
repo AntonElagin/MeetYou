@@ -1,11 +1,11 @@
-#ifndef TECHPROJECT_HTTP_SESSION_H
-#define TECHPROJECT_HTTP_SESSION_H
+#ifndef TECHPROJECT_HTTPSESSION_H
+#define TECHPROJECT_HTTPSESSION_H
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
-#include "http_session_interface.h"
-#include "view_registration.h"
-#include "websocket_session.h"
+#include "IHttpSession.h"
+#include "ViewRegistration.h"
+#include "WebsocketSession.h"
 
 namespace beast = boost::beast;
 namespace http = boost::beast::http;
@@ -13,15 +13,15 @@ namespace websocket = boost::beast::websocket;
 namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
 
-struct work {
-  virtual ~work() = default;
+struct Work {
+  virtual ~Work() = default;
 
   virtual void operator()() = 0;
 };
 
 // Обрабатывает соединение HTTP-сервера
-class http_session : public std::enable_shared_from_this<http_session>,
-                     public HttpSessionInterface {
+class HttpSession : public std::enable_shared_from_this<HttpSession>,
+                    public IHttpSession {
   // Эта очередь используется для конвейерной передачи HTTP.
   class queue {
     enum {
@@ -29,11 +29,11 @@ class http_session : public std::enable_shared_from_this<http_session>,
       limit = 8
     };
 
-    http_session &self;
-    std::vector<std::unique_ptr<work>> items;
+    HttpSession &self;
+    std::vector<std::unique_ptr<Work>> items;
 
    public:
-    explicit queue(http_session &_self);
+    explicit queue(HttpSession &_self);
 
     bool is_full() const;
 
@@ -53,7 +53,7 @@ class http_session : public std::enable_shared_from_this<http_session>,
 
  public:
   // Получаем сокет
-  http_session(tcp::socket &&socket);
+  HttpSession(tcp::socket &&socket);
 
   void run() override;
 
@@ -68,4 +68,4 @@ class http_session : public std::enable_shared_from_this<http_session>,
   void do_close();
 };
 
-#endif  // TECHPROJECT_HTTP_SESSION_H
+#endif  // TECHPROJECT_HTTPSESSION_H

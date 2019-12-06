@@ -14,8 +14,8 @@
 #include <thread>
 #include <utility>
 #include <vector>
-#include "listener.h"
-#include "runner_interface.h"
+#include "IRunner.h"
+#include "Listener.h"
 
 namespace beast = boost::beast;
 namespace http = boost::beast::http;
@@ -23,13 +23,13 @@ namespace websocket = boost::beast::websocket;
 namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
 
-class runner : public RunnerInterface {
+class Runner : public IRunner {
   boost::asio::ip::address const address;
   unsigned short const port;
   int const threads;
 
  public:
-  runner(net::ip::address address, const unsigned int &port,
+  Runner(net::ip::address address, const unsigned int &port,
          const int &threads);
 
   void run() override;

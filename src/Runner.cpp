@@ -1,17 +1,16 @@
-#include "../include/runner.h"
-
+#include "Runner.h"
 #include <utility>
 
-runner::runner(net::ip::address _address, const unsigned int &_port,
+Runner::Runner(net::ip::address _address, const unsigned int &_port,
                const int &_threads)
     : address(std::move(_address)), port(_port), threads(_threads) {}
 
-void runner::run() {
+void Runner::run() {
   // Io_context требуется для всех операций ввода-вывода
   boost::asio::io_context ioc{threads};
 
   // Создаем и запускаем порт прослушивания
-  std::make_shared<listener>(ioc, tcp::endpoint{address, port})->run();
+  std::make_shared<Listener>(ioc, tcp::endpoint{address, port})->run();
 
   // Захват SIGINT и SIGTERM для выполнения чистого завершения работы
   boost::asio::signal_set signals(ioc, SIGINT, SIGTERM);

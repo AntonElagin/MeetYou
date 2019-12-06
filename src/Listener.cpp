@@ -1,6 +1,6 @@
-#include "../include/listener.h"
+#include "Listener.h"
 
-listener::listener(net::io_context &_ioc, tcp::endpoint _endpoint)
+Listener::Listener(net::io_context &_ioc, tcp::endpoint _endpoint)
     : ioc(_ioc),
       acceptor(net::make_strand(_ioc))
 
@@ -35,20 +35,20 @@ listener::listener(net::io_context &_ioc, tcp::endpoint _endpoint)
   }
 }
 
-void listener::run() { do_accept(); }
+void Listener::run() { do_accept(); }
 
-void listener::do_accept() {
+void Listener::do_accept() {
   acceptor.async_accept(
       net::make_strand(ioc),
-      beast::bind_front_handler(&listener::on_accept, shared_from_this()));
+      beast::bind_front_handler(&Listener::on_accept, shared_from_this()));
 }
 
-void listener::on_accept(beast::error_code ec, tcp::socket socket) {
+void Listener::on_accept(beast::error_code ec, tcp::socket socket) {
   if (ec) {
     fail(ec, "accept");
   } else {
     // Создаем сеанс http и запусткаем его
-    std::make_shared<http_session>(std::move(socket))->run();
+    std::make_shared<HttpSession>(std::move(socket))->run();
   }
   // Принять другое соединение
   do_accept();

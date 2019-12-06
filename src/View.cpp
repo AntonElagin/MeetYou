@@ -1,4 +1,4 @@
-#include "../include/view.h"
+#include "../include/View.h"
 
 #include <utility>
 

@@ -3,6 +3,11 @@ project(techProject)
 
 set(CMAKE_CXX_STANDARD 11)
 
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+set(INC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
+
+
 set(BOOST_INCLUDEDIR "/home/anton/apps/boost_1_71_0")
 set(BOOST_LIBRARYDIR "/home/anton/apps/boost_1_71_0/stage/lib")
 set(Boost_NO_SYSTEM_PATHS ON)
@@ -11,8 +16,38 @@ set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 set(BOOST_ALL_DYN_LINK OFF)
 set(nlohmann_json_DIR "/home/anton/apps/json")
-#set(nlohmann_json_INCLUDEDIR "/home/anton/apps/json")
-#set(JSON_LIBRARYDIR "/home/anton/apps/json/lib")
+include_directories(include)
+
+set(ALL_SOURCES
+        ${SRC_DIR}/AuthMiddleware.cpp
+        ${SRC_DIR}/Md5.cpp
+        ${SRC_DIR}/Router.cpp
+        ${SRC_DIR}/IRouter.cpp
+        ${SRC_DIR}/HttpSession.cpp
+        ${SRC_DIR}/WebsocketSession.cpp
+        ${SRC_DIR}/ViewRegistration.cpp
+        ${SRC_DIR}/Fail.cpp
+        ${SRC_DIR}/main.cpp
+        ${SRC_DIR}/Listener.cpp
+        ${SRC_DIR}/View.cpp
+        ${SRC_DIR}/Runner.cpp)
+set(ALL_HEADERS
+        ${INC_DIR}/Router.h
+        ${INC_DIR}/Md5.h
+        ${INC_DIR}/Listener.h
+        ${INC_DIR}/ViewRegistration.h
+        ${INC_DIR}/Fail.h
+        ${INC_DIR}/HttpSession.h
+        ${INC_DIR}/WebsocketSession.h
+        ${INC_DIR}/Runner.h
+        ${INC_DIR}/View.h
+        ${INC_DIR}/IRunner.h
+        ${INC_DIR}/IListener.h
+        ${INC_DIR}/IHttpSession.h
+        ${INC_DIR}/IWebsocketSession.h
+        ${INC_DIR}/IRouter.h
+        ${INC_DIR}/AuthMiddleware.h
+        ${INC_DIR}/IAuthMiddleware.h)
 
 
 find_package (Boost REQUIRED COMPONENTS system filesystem)
@@ -39,34 +74,7 @@ endif ()
 #link_directories(${mysqlcppconn8_LIBRARY_DIRS})
 
 
-add_executable(runServer
-        include/listener.h
-        include/view_registration.h
-        include/fail.h
-        include/http_session.h
-        include/websocket_session.h src/runner.cpp
-        include/runner.h
-        include/view.h
-        include/bd_tables_conectors.h
-        include/runner_interface.h
-        include/listener_interfece.h
-        include/http_session_interface.h
-        include/websocket_session_interface.h
-        include/router_interface.h
-        include/auth_middleware.h
-        include/auth_middleware_interface.h
-        src/auth_middleware.cpp
-        src/md5.cpp include/md5.h
-        src/router.cpp include/router.h
-        src/router_interface.cpp
-        src/http_session.cpp
-        src/websocket_session.cpp
-        src/bd_tables_conectors.cpp
-        src/view_registration.cpp
-        src/fail.cpp
-        src/main.cpp
-        src/listener.cpp
-        src/view.cpp)
+add_executable(runServer ${ALL_SOURCES} ${ALL_HEADERS})
 set(EXTRA_LIBRARY "mysqlcppconn")
 find_library(MYSQL_LIB mysqlcppconn)
 
@@ -91,15 +99,15 @@ add_subdirectory(${GMOCK_DIR} ${CMAKE_BINARY_DIR}/googlegmock)
 include_directories(SYSTEM ${GMOCK_DIR}/include ${GMOCK_DIR}/gtest/include)
 # Link runTests with what we want to test and the GTest and pthread library
 #add_executable(runTests tests/gtest_main.cpp
-#        tests/gmock/http_session.h
+#        tests/gmock/HttpSession.h
 #        listener.cpp
 #        listener.h
 #        fail.cpp
 #        fail.h
-#        http_session.cpp
-#        http_session.h
-#        websocket_session.cpp
-#        websocket_session.h
+#        HttpSession.cpp
+#        HttpSession.h
+#        WebsocketSession.cpp
+#        WebsocketSession.h
 #        runner.cpp
 #        runner.h
 #        request.cpp

@@ -1,6 +1,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "../include/view.h"
+#include "../include/View.h"
 #include <boost/beast.hpp>
 #include <map>
 #include "../include/bd_tables_conectors.h"

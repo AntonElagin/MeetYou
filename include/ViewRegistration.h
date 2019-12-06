@@ -1,10 +1,10 @@
-#ifndef TECHPROJECT_VIEW_REGISTRATION_H
-#define TECHPROJECT_VIEW_REGISTRATION_H
+#ifndef TECHPROJECT_VIEWREGISTRATION_H
+#define TECHPROJECT_VIEWREGISTRATION_H
 
 #include <boost/beast.hpp>
 #include <nlohmann/json.hpp>
 #include <regex>
-#include "view.h"
+#include "View.h"
 
 class ViewRegistration : public View {
  public:
@@ -27,4 +27,4 @@ class ViewRegistration : public View {
   void createToken(const std::string &token, const int &userId);
 };
 
-#endif  // TECHPROJECT_VIEW_REGISTRATION_H
+#endif  // TECHPROJECT_VIEWREGISTRATION_H

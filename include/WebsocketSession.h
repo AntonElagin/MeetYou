@@ -1,10 +1,10 @@
-#ifndef TECHPROJECT_WEBSOCKET_SESSION_H
-#define TECHPROJECT_WEBSOCKET_SESSION_H
+#ifndef TECHPROJECT_WEBSOCKETSESSION_H
+#define TECHPROJECT_WEBSOCKETSESSION_H
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
-#include "fail.h"
-#include "websocket_session_interface.h"
+#include "Fail.h"
+#include "IWebsocketSession.h"
 
 namespace beast = boost::beast;
 namespace http = boost::beast::http;
@@ -13,14 +13,13 @@ namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
 
 // Echoes back all received WebSocket messages
-class websocket_session
-    : public std::enable_shared_from_this<websocket_session> {
+class WebsocketSession : public std::enable_shared_from_this<WebsocketSession> {
   websocket::stream<beast::tcp_stream> ws_;
   beast::flat_buffer buffer_;
 
  public:
   // Take ownership of the socket
-  explicit websocket_session(tcp::socket &&socket);
+  explicit WebsocketSession(tcp::socket &&socket);
 
   // Start the asynchronous accept operation
   template <class Body, class Allocator>
@@ -38,7 +37,7 @@ class websocket_session
 
     // Accept the websocket handshake
     ws_.async_accept(req,
-                     beast::bind_front_handler(&websocket_session::on_accept,
+                     beast::bind_front_handler(&WebsocketSession::on_accept,
                                                shared_from_this()));
   }
 
@@ -54,4 +53,4 @@ class websocket_session
 
 //------------------------------------------------------------------------------
 
-#endif  // TECHPROJECT_WEBSOCKET_SESSION_H
+#endif  // TECHPROJECT_WEBSOCKETSESSION_H
