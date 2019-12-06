@@ -22,7 +22,6 @@ set(ALL_SOURCES
         ${SRC_DIR}/AuthMiddleware.cpp
         ${SRC_DIR}/Md5.cpp
         ${SRC_DIR}/Router.cpp
-        ${SRC_DIR}/IRouter.cpp
         ${SRC_DIR}/HttpSession.cpp
         ${SRC_DIR}/WebsocketSession.cpp
         ${SRC_DIR}/ViewRegistration.cpp
@@ -45,7 +44,6 @@ set(ALL_HEADERS
         ${INC_DIR}/IListener.h
         ${INC_DIR}/IHttpSession.h
         ${INC_DIR}/IWebsocketSession.h
-        ${INC_DIR}/IRouter.h
         ${INC_DIR}/AuthMiddleware.h
         ${INC_DIR}/IAuthMiddleware.h)
 
@@ -61,18 +59,6 @@ if (nlohmann_json_FOUND)
 else()
     message("error")
 endif ()
-
-
-#include(FindPkgConfig)
-#pkg_check_modules(LIBMYSQLCLIENT REQUIRED mysqlclient)
-#
-#foreach(FLAG ${LIBMYSQLCLIENT_CFLAGS_OTHER})
-#    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAG}")
-#endforeach()
-#
-#link_directories(${LIBMYSQLCLIENT_LIBRARY_DIRS})
-#link_directories(${mysqlcppconn8_LIBRARY_DIRS})
-
 
 add_executable(runServer ${ALL_SOURCES} ${ALL_HEADERS})
 set(EXTRA_LIBRARY "mysqlcppconn")

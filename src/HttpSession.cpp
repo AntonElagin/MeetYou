@@ -4,31 +4,33 @@
 #include <cppconn/exception.h>
 #include <cppconn/resultset.h>
 #include "AuthMiddleware.h"
+#include "Router.h"
 #include "mysql_driver.h"
 
-template <class Send>
-void handle_request1(const http::request<http::string_body>& req, Send&& send) {
-  boost::string_view st;
-  sql::Driver* driver = get_driver_instance();
-  std::shared_ptr<sql::Connection> con(
-      driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
-  con->setSchema("MeetYou");
-  AuthMiddleware authMiddleware(con, req);
-  authMiddleware.isAuth();
-
-  http::response<http::string_body> res1;
-  try {
-    //    ViewRegistration viewRegistration(req, con);
-
-    //    res1 = viewRegistration.get();
-
-  } catch (sql::SQLException& e) {
-    std::cout << e.what() << std::endl << "kek";
-  }
-  // Respond to GET request
-  std::string body;
-  return send(std::move(res1));
-}
+// template <class Send>
+// void handle_request1(const http::request<http::string_body>& req, Send&&
+// send) {
+//  boost::string_view st;
+//  sql::Driver* driver = get_driver_instance();
+//  std::shared_ptr<sql::Connection> con(
+//      driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
+//  con->setSchema("MeetYou");
+//  AuthMiddleware authMiddleware(con, req);
+//  authMiddleware.isAuth();
+//
+//  http::response<http::string_body> res1;
+//  try {
+//    //    ViewRegistration viewRegistration(req, con);
+//
+//    //    res1 = viewRegistration.get();
+//
+//  } catch (sql::SQLException& e) {
+//    std::cout << e.what() << std::endl << "kek";
+//  }
+//  // Respond to GET request
+//  std::string body;
+//  return send(std::move(res1));
+//}
 
 HttpSession::HttpSession(tcp::socket&& socket)
     : stream(std::move(socket)), queue(*this) {}
@@ -70,7 +72,9 @@ void HttpSession::on_read(beast::error_code ec, std::size_t bytes_transferred) {
   // Отправляем ответ
   // TODO : зааменить на роутинг
   //  handle_request(parser->release(), queue);
-  handle_request1(parser->release(), queue);
+  //  handle_request1(parser->release(), queue);
+  Router router(parser->release());
+  router.startRouting(queue);
 
   // Если мы не находимся на пределе очереди, попробуйте передать другой запрос
   // по конвейеру
@@ -100,6 +104,10 @@ void HttpSession::do_close() {
   beast::error_code ec;
   stream.socket().shutdown(tcp::socket::shutdown_send, ec);
 }
+//
+// beast::tcp_stream HttpSession::getStream() {
+//  return stream;
+//}
 
 HttpSession::queue::queue(HttpSession& _self) : self(_self) {
   static_assert(limit > 0, "queue limit must be positive");
@@ -141,13 +149,18 @@ void HttpSession::queue::operator()(
 }
 
 bool HttpSession::queue::is_full() const { return items.size() >= limit; }
+
+//////////////////////////////////////////////////////////////////////////////
 //
-// queue::queue(HttpSession& _self) : self(_self) {
+//
+// template <class HttpSession>
+// Queue<HttpSession>::Queue(HttpSession& _self) : self(_self) {
 //  static_assert(limit > 0, "queue limit must be positive");
 //  items.reserve(limit);
 //}
 //
-// bool queue::on_write() {
+// template <class HttpSession>
+// bool Queue<HttpSession>::on_write() {
 //  BOOST_ASSERT(!items.empty());
 //  auto const was_full = is_full();
 //  items.erase(items.begin());
@@ -155,11 +168,12 @@ bool HttpSession::queue::is_full() const { return items.size() >= limit; }
 //  return was_full;
 //}
 //
+// template <class HttpSession>
 // template <bool isRequest, class Body, class Fields>
-// void queue::operator()(
+// void Queue<HttpSession>::operator()(
 //    http::message<isRequest, Body, Fields>&& msg_) {
 //  // This holds a work item
-//  struct work_impl : work {
+//  struct work_impl : Work {
 //    HttpSession& self;
 //    http::message<isRequest, Body, Fields> msg;
 //
@@ -169,7 +183,7 @@ bool HttpSession::queue::is_full() const { return items.size() >= limit; }
 //
 //    void operator()() {
 //      http::async_write(
-//          self.stream, msg,
+//          self.getStream(), msg,
 //          beast::bind_front_handler(&HttpSession::on_write,
 //                                    self.shared_from_this(), msg.need_eof()));
 //    }
@@ -182,4 +196,5 @@ bool HttpSession::queue::is_full() const { return items.size() >= limit; }
 //  if (items.size() == 1) (*items.front())();
 //}
 //
-// bool queue::is_full() const { return items.size() >= limit; }
+// template <class HttpSession>
+// bool Queue<HttpSession>::is_full() const { return items.size() >= limit; }
