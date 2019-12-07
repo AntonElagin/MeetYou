@@ -12,6 +12,7 @@
 #include "View.h"
 #include "ViewOther.h"
 #include "ViewRegistration.h"
+#include "ViewUser.h"
 
 namespace http = boost::beast::http;
 
@@ -22,7 +23,7 @@ class Router {
   int userId;
   // Таблица для проверки необходимости авторизации при get запросе
   std::unordered_map<std::string, bool> authGetMap;
-  std::set<std::string> routeList = {"/auth", "/user", "/event"};
+//  std::set<std::string> routeList = {"/auth", "/user", "/event"};
 
   std::unique_ptr<View> getView(const std::string& path);
 

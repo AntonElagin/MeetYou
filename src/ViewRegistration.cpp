@@ -14,8 +14,9 @@ bool ViewRegistration::isLogin(const std::string &value) {
 }
 
 bool ViewRegistration::isEmail(const std::string &value) {
+//  TODO : Проверить регулярку(Возможно отрабатывает не все email)
   std::regex reg{
-      R"(^([a-z0-9_-]+\.)*[a-z0-9_-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}$)"};
+      R"(^([A-Za-z0-9_-]+\.)*[a-z0-9_-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}$)"};
   return (value.size() > 6) && (value.size() < 45) &&
          std::regex_search(value, reg);
 }
@@ -31,6 +32,7 @@ http::response<http::string_body> ViewRegistration::post() {
   res.keep_alive(req.keep_alive());
   std::string pas, log, eml;
   //  Парсинг body
+//  TODO : Падает на невалидном JSON
   nlohmann::json js = nlohmann::json::parse(req.body());
   if (js.contains("password") && js.contains("login") && js.contains("email")) {
     pas = js.at("password");
@@ -100,7 +102,7 @@ http::response<http::string_body> ViewRegistration::post() {
         res.set(http::field::content_length, body.dump().size());
         return res;
       } catch (...) {
-        std::cout << "Pizdech!" << std::endl;
+        std::cout << "Bad bad error!" << std::endl;
       }
     }
     nlohmann::json exBody;
@@ -135,6 +137,7 @@ http::response<http::string_body> ViewRegistration::post() {
 
 http::response<http::string_body> ViewRegistration::get() {
   boost::beast::http::response<http::string_body> res;
+  //  TODO : Падает на невалидном JSON
   nlohmann::json js = nlohmann::json::parse(req.body());
   int userId = -1;
   if (js.contains("password") && js.contains("login")) {

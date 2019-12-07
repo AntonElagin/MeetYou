@@ -28,7 +28,10 @@ set(ALL_SOURCES
         ${SRC_DIR}/Fail.cpp
         ${SRC_DIR}/Listener.cpp
         ${SRC_DIR}/View.cpp
-        ${SRC_DIR}/Runner.cpp src/Queue.cpp src/ViewOther.cpp)
+        ${SRC_DIR}/Runner.cpp
+        ${SRC_DIR}/Queue.cpp
+        ${SRC_DIR}/ViewOther.cpp
+        ${SRC_DIR}/ViewUser.cpp)
 set(ALL_HEADERS
         ${INC_DIR}/Router.h
         ${INC_DIR}/Md5.h
@@ -44,7 +47,11 @@ set(ALL_HEADERS
         ${INC_DIR}/IHttpSession.h
         ${INC_DIR}/IWebsocketSession.h
         ${INC_DIR}/AuthMiddleware.h
-        ${INC_DIR}/IAuthMiddleware.h include/Queue.h include/Work.h include/ViewOther.h)
+        ${INC_DIR}/IAuthMiddleware.h
+        ${INC_DIR}/Queue.h
+        ${INC_DIR}/Work.h
+        ${INC_DIR}/ViewOther.h
+        ${INC_DIR}/ViewUser.h)
 
 
 find_package (Boost REQUIRED COMPONENTS system filesystem)
@@ -64,8 +71,6 @@ set(EXTRA_LIBRARY "mysqlcppconn")
 find_library(MYSQL_LIB mysqlcppconn)
 
 target_link_libraries(runServer ${Boost_LIBRARIES} pthread
-#        ${LIBMYSQLCLIENT_INCLUDE_DIRS}
-#        ${LIBMYSQLCLIENT_LIBRARIES}
         ${mysqlcppconn8_INCLUDE_DIRS}
         ${mysqlcppconn8_LIBRARIES}
         ${MYSQL_LIB}
@@ -77,10 +82,6 @@ set (GTest_DIR "/home/anton/apps/googletest")
 find_package(GTest REQUIRED )
 include_directories(${GTEST_INCLUDE_DIRS})
 
-#find_package(googlegmock REQUIRED)
-#include_directories(${GMOCK_INCLUDE_DIRS})
-#set (GMOCK_DIR "/usr/src/googletest")
-#add_subdirectory(${GMOCK_DIR} ${CMAKE_BINARY_DIR}/googlegmock)
 include_directories(SYSTEM ${GMOCK_DIR}/include ${GMOCK_DIR}/gtest/include)
 # Link runTests with what we want to test and the GTest and pthread library
 add_executable(runTests tests/gtest_main.cpp

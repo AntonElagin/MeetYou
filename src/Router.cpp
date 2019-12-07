@@ -2,7 +2,7 @@
 
 Router::Router(http::request<http::string_body> req)
     : req(std::move(req)), userId(-1) {
-  authGetMap = {{"/auth", false}, {"/user", true}, {"/event", true}};
+  authGetMap = {{"/auth", false}, {"/user", false}, {"/event", true}};
   driver = get_driver_instance();
   std::shared_ptr<sql::Connection> con(
       driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
@@ -49,7 +49,7 @@ std::unique_ptr<View> Router::getView(const std::string& path) {
   if (path == "/auth" || path == "/")
     return std::unique_ptr<View>(new ViewRegistration(req, conn, userId));
   else if (path == "/user")
-    return std::unique_ptr<View>(new ViewOther(req, conn, userId));
+    return std::unique_ptr<View>(new ViewUser(req, conn, userId));
   else if (path == "/event")
     return std::unique_ptr<View>(new ViewOther(req, conn, userId));
   else if (path == "/chat")
