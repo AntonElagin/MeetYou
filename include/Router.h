@@ -40,7 +40,7 @@ class Router {
 
 template <class Send>
 void Router::startRouting(Send&& send) {
-  std::regex reg{"/[^?]+"};
+  std::regex reg{"/[^?]*"};
   std::smatch iterator;
 
   std::unique_ptr<View> controller;
@@ -59,7 +59,7 @@ void Router::startRouting(Send&& send) {
       controller = getView(path);
       return send(std::move(controller->get()));
     } else if (req.method_string() == "POST" &&
-               (authFlag || path == "/auth" ||
+               (authFlag || path == "/auth" || path == "/auth" ||
                 authGetMap.find(path) == authGetMap.end())) {
       controller = getView(path);
       return send(std::move(controller->post()));
