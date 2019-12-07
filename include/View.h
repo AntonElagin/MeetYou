@@ -48,7 +48,7 @@ public:
         std::unique_ptr<sql::PreparedStatement> stmt(conn->prepareStatement(
                 "select distinct chat_id,user_id from result_table where chat_id=? and user_id=?"));
         stmt->setInt(1, chatid);
-        stmt->setInt(1, userId);
+        stmt->setInt(2, userId);
         std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
         if (res->next())
             return true;

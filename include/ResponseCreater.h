@@ -10,13 +10,13 @@ namespace http = boost::beast::http;
 class ResponseCreator {
     http::response<http::string_body> resp;
 public:
-    ResponseCreator(json base_body, int err_code) {
+    ResponseCreator(json &base_body, int err_code) {
         json body(base_body);
         if (err_code == 1) {
-            body["status"] = "Error";
+            body.push_back({"status", "Error"});
             resp.result(500);
         } else {
-            body["status"] = "OK";
+            body.push_back({"status", "OK"});
             resp.result(200);
         }
         resp.set(http::field::version, 11);

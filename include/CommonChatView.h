@@ -4,6 +4,7 @@
 #include <boost/beast.hpp>
 #include <regex>
 #include <memory>
+#include <boost/regex.hpp>
 #include <boost/beast.hpp>
 #include <utility>
 #include "View.h"
@@ -75,8 +76,8 @@ public:
         std::cmatch result;
         boost::string_view path = req.target();
         std::string path_str = path.to_string();
-        std::regex r_chat_history("/chat/(history|members_list|members_count)\\?chatid=(\\d+)");
-        if (std::regex_match(path_str.c_str(), result, r_chat_history)) {
+        std::regex regexik("/chat/(history|members_list|members_count)\\?chatid=(\\d+)");
+        if (std::regex_match(path_str.c_str(), result, regexik)) {
             for (int i = 0; i < result.size(); i++) {
                 if (i == 1)
                     params_list.insert({"search_data", result[i]});
@@ -86,13 +87,14 @@ public:
         }
         json j(params_list);
         json res_body;
+        std::string chatikid;
         int chatid;
         int error = 0;
         std::string search_data;
         if (j.contains("chatid") && j.contains("search_data")) {
             json jsonik = j.at("chatid");
-            if (jsonik.is_number())
-                chatid = j.at("chatid");
+            chatikid = j.at("chatid");
+            chatid = std::stoi(chatikid);
             jsonik = j.at("search_data");
             if (jsonik.is_string())
                 search_data = j.at("search_data");
@@ -151,8 +153,9 @@ public:
                     "select count(user_id) quant from result_table where chat_id=?"));
             stmt->setInt(1, chatid);
             std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
-            res->next();
-            int members_count = res->getInt(1);
+            int members_count = -1;
+            if (res->next())
+                members_count = res->getInt(1);
             json j;
             j["members_count"] = members_count;
             return std::move(j);
