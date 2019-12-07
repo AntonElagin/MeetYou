@@ -17,7 +17,6 @@ class QuickTest : public testing::Test {
 protected:
     void SetUp() override {
         req.version(11);
-        req.method(http::verb::post);
         req.set(http::field::user_agent, "test");
         req.set(http::field::host, "localhost");
         req.prepare_payload();
@@ -62,6 +61,7 @@ TEST_F(QuickTest, requests) {
 
 TEST_F(QuickTest, history) {
     int userid = 6;
+    req.method(http::verb::get);
     req.target("/chat/history?chatid=1");
     ViewChatCommon view_chat(req, con, userid);
     auto kek = view_chat.get();
@@ -71,6 +71,7 @@ TEST_F(QuickTest, history) {
 
 TEST_F(QuickTest, members_count) {
     int userid = 2;
+    req.method(http::verb::get);
     req.target("/chat/members_count?chatid=1");
     ViewChatCommon view_chat(req, con, userid);
     auto kek = view_chat.get();
@@ -80,15 +81,12 @@ TEST_F(QuickTest, members_count) {
 
 TEST_F(QuickTest, members_list) {
     int id = 2;
-    req.body() = "{\n"
-                 "  \"chatid\": 1,\n"
-                 "  \"search_data\": \"members_list\"\n"
-                 "}";
+    req.target("/chat/members_list?chatid=1");
     ViewChatCommon view_chat(req, con, id);
     auto kek = view_chat.get();
     boost::string_view heh = kek.body();
     ASSERT_STREQ(heh.to_string().c_str(),
-                 "{\"content\":[[2,\"Cchaddie Disdel\"],[3,\"Maxine Fanthome\"],[4,\"Elijah Attwell\"]],\"message\":\"OK\",\"status\":200}");
+                 "[[2,\"Cchaddie Disdel\"],[3,\"Maxine Fanthome\"],[4,\"Elijah Attwell\"],[\"status\",\"OK\"]]");
 }
 
 TEST_F(QuickTest, chat_view) {
