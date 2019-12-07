@@ -26,7 +26,6 @@ set(ALL_SOURCES
         ${SRC_DIR}/WebsocketSession.cpp
         ${SRC_DIR}/ViewRegistration.cpp
         ${SRC_DIR}/Fail.cpp
-        ${SRC_DIR}/main.cpp
         ${SRC_DIR}/Listener.cpp
         ${SRC_DIR}/View.cpp
         ${SRC_DIR}/Runner.cpp src/Queue.cpp src/ViewOther.cpp)
@@ -60,13 +59,13 @@ else()
     message("error")
 endif ()
 
-add_executable(runServer ${ALL_SOURCES} ${ALL_HEADERS})
+add_executable(runServer ${ALL_SOURCES} ${ALL_HEADERS} ${SRC_DIR}/main.cpp)
 set(EXTRA_LIBRARY "mysqlcppconn")
 find_library(MYSQL_LIB mysqlcppconn)
 
 target_link_libraries(runServer ${Boost_LIBRARIES} pthread
-        ${LIBMYSQLCLIENT_INCLUDE_DIRS}
-        ${LIBMYSQLCLIENT_LIBRARIES}
+#        ${LIBMYSQLCLIENT_INCLUDE_DIRS}
+#        ${LIBMYSQLCLIENT_LIBRARIES}
         ${mysqlcppconn8_INCLUDE_DIRS}
         ${mysqlcppconn8_LIBRARIES}
         ${MYSQL_LIB}
@@ -74,37 +73,30 @@ target_link_libraries(runServer ${Boost_LIBRARIES} pthread
         nlohmann_json::nlohmann_json)
 
 
-
-#find_package(GTest REQUIRED)
-#include_directories(${GTEST_INCLUDE_DIRS})
+set (GTest_DIR "/home/anton/apps/googletest")
+find_package(GTest REQUIRED )
+include_directories(${GTEST_INCLUDE_DIRS})
 
 #find_package(googlegmock REQUIRED)
-include_directories(${GMOCK_INCLUDE_DIRS})
-set (GMOCK_DIR "/usr/src/googletest")
-add_subdirectory(${GMOCK_DIR} ${CMAKE_BINARY_DIR}/googlegmock)
+#include_directories(${GMOCK_INCLUDE_DIRS})
+#set (GMOCK_DIR "/usr/src/googletest")
+#add_subdirectory(${GMOCK_DIR} ${CMAKE_BINARY_DIR}/googlegmock)
 include_directories(SYSTEM ${GMOCK_DIR}/include ${GMOCK_DIR}/gtest/include)
 # Link runTests with what we want to test and the GTest and pthread library
-#add_executable(runTests tests/gtest_main.cpp
-#        tests/gmock/HttpSession.h
-#        listener.cpp
-#        listener.h
-#        fail.cpp
-#        fail.h
-#        HttpSession.cpp
-#        HttpSession.h
-#        WebsocketSession.cpp
-#        WebsocketSession.h
-#        runner.cpp
-#        runner.h
-#        request.cpp
-#        request.h
-#        tests/test_gmock.cpp
-#        tests/gmock/listener.h bd_tables_conectors.cpp bd_tables_conectors.h)
+add_executable(runTests tests/gtest_main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/gmock/GHttpSession.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/testViewReg.cpp
+        ${ALL_SOURCES} ${ALL_HEADERS})
 #
-#target_link_libraries(runTests
-##        ${GTEST_LIBRARIES} pthread
-#        ${Boost_LIBRARIES} pthread
-#        ${LIBMYSQLCLIENT_INCLUDE_DIRS}
-#        ${LIBMYSQLCLIENT_LIBRARIES}
-#        gmock_main Sub)
+target_link_libraries(runTests
+        ${GTEST_LIBRARIES} pthread
+        ${Boost_LIBRARIES} pthread
+        ${mysqlcppconn8_INCLUDE_DIRS}
+        ${mysqlcppconn8_LIBRARIES}
+        ${MYSQL_LIB}
+        ${LIBMYSQLCLIENT_INCLUDE_DIRS}
+        ${LIBMYSQLCLIENT_LIBRARIES}
+        ${nlohmann_json}
+        nlohmann_json::nlohmann_json
+)
 

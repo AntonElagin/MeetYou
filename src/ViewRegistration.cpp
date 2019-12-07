@@ -151,13 +151,14 @@ http::response<http::string_body> ViewRegistration::get() {
       body["status"] = 200;
       body["message"] = "OK";
       body["access_token"] = token;
+      res.result(200);
       res.body() = body.dump();
       res.set(http::field::content_length, body.dump().size());
       return res;
     }
     nlohmann::json exBody;
     res.result(400);
-    exBody["error"] = 400;
+    exBody["status"] = 400;
     exBody["message"] = "Invalid user data";
     std::string exBodyStr = exBody.dump();
     res.set(http::field::content_length, exBodyStr.size());
@@ -167,7 +168,7 @@ http::response<http::string_body> ViewRegistration::get() {
   }
   nlohmann::json exBody;
   res.result(400);
-  exBody["error"] = 400;
+  exBody["status"] = 400;
   exBody["message"] = "JSON error";
   std::string exBodyStr = exBody.dump();
   res.set(http::field::content_length, exBodyStr.size());

@@ -53,7 +53,8 @@ class HttpSession : public std::enable_shared_from_this<HttpSession>,
   beast::tcp_stream& getStream();
   void run() override;
 
-  void onWrite(bool close, beast::error_code ec, std::size_t bytes_transferred);
+  void onWrite(bool close, beast::error_code ec,
+               std::size_t bytes_transferred) override;
 
  private:
   void doRead();

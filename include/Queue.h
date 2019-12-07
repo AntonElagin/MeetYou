@@ -31,6 +31,8 @@ class Queue {
   void operator()(http::message<isRequest, Body, Fields>&& msg_);
 };
 
+/////////////////////////////////////////////////////////////////////
+
 namespace beast = boost::beast;
 
 template <class HttpSession>
