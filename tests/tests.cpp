@@ -1,8 +1,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "basic_classes.h"
-#include "handler_classes.h"
-#include "req_parser.h"
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
@@ -10,8 +8,8 @@
 #include <boost/config.hpp>
 #include <string>
 #include <cppconn/connection.h>
-#include "common_chat.h"
-#include "message_chat_view.h"
+#include "CommonChatView.h"
+#include "MessageChatView.h"
 
 using ::testing::Return;
 using ::testing::_;
@@ -72,6 +70,7 @@ TEST_F(QuickTest, history) {
                  "  \"chatid\": 5,\n"
                  "  \"search_data\": \"history\"\n"
                  "}";
+    req.target("/chat/history?chatid=2");
     ViewChatCommon view_chat(req, con, id);
     auto kek = view_chat.get();
     boost::string_view heh = kek.body();
