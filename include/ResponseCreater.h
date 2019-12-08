@@ -27,9 +27,7 @@ public:
         resp.prepare_payload();
     }
 
-    http::response<http::string_body> get_resp() {
-        return resp;
-    };
+    http::response<http::string_body> get_resp() { return resp; }
 };
 
 #endif //PLUS_PROJECT_RESPONSECREATER_H
