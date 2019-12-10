@@ -28,7 +28,6 @@ void shared_state::send(std::string message) {
             v.emplace_back(p->weak_from_this());
     }
     ///из множества сессий делаем вектор укзаателей на сессию
-
     // For each session in our local list, try to acquire a strong
     // pointer. If successful, then send the message on that session.
     for (auto const &wp : v)

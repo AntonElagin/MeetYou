@@ -21,10 +21,7 @@ class shared_state {
 public:
     explicit shared_state(std::string doc_root);
 
-    std::string const &
-    doc_root() const noexcept {
-        return doc_root_;
-    }
+    std::string const &doc_root() const noexcept { return doc_root_; }
 
     void join(websocket_session *session);
 

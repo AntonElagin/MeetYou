@@ -2,10 +2,7 @@
 #include "http_session.hpp"
 #include <iostream>
 
-listener::listener(
-        net::io_context &ioc,
-        tcp::endpoint endpoint,
-        boost::shared_ptr<shared_state> const &state)
+listener::listener(net::io_context &ioc, tcp::endpoint endpoint, boost::shared_ptr<shared_state> const &state)
         : ioc_(ioc), acceptor_(ioc), state_(state) {
     beast::error_code ec;
     // Open the acceptor
@@ -27,8 +24,7 @@ listener::listener(
         return;
     }
     // Start listening for connections
-    acceptor_.listen(
-            net::socket_base::max_listen_connections, ec);
+    acceptor_.listen(net::socket_base::max_listen_connections, ec);
     if (ec) {
         fail(ec, "listen");
         return;
@@ -43,8 +39,7 @@ void listener::run() {
 // Report a failure
 void listener::fail(beast::error_code ec, char const *what) {
     // Don't report on canceled operations
-    if (ec == net::error::operation_aborted)
-        return;
+    if (ec == net::error::operation_aborted) return;
     std::cerr << what << ": " << ec.message() << "\n";
 }
 

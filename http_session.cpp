@@ -229,13 +229,8 @@ void http_session::do_read() {
     stream_.expires_after(std::chrono::seconds(30));
 
     // Read a request
-    http::async_read(
-            stream_,
-            buffer_,
-            parser_->get(),
-            beast::bind_front_handler(
-                    &http_session::on_read,
-                    shared_from_this()));
+    http::async_read(stream_, buffer_, parser_->get(),
+                     beast::bind_front_handler(&http_session::on_read, shared_from_this()));
 }
 
 void http_session::on_read(beast::error_code ec, std::size_t) {
