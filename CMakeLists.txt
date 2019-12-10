@@ -102,4 +102,11 @@ target_link_libraries(runTests
         ${nlohmann_json}
         nlohmann_json::nlohmann_json
 )
-
+set(SOURCE nlohmann/json.hpp
+        src/CommonChatView.cpp src/MessageChatView.cpp src/UserChatView.cpp src/ResponseCreater.cpp include/View.h)
+include_directories(include)
+include_directories(nlohmann)
+link_libraries(mysqlcppconn Threads::Threads ${Boost_LIBRARIES})
+add_executable(Test tests/tests.cpp)
+target_include_directories(Test PUBLIC ${GTEST_INCLUDE_DIRS})
+target_link_libraries(Test PUBLIC ${GTEST_LIBRARIES} pthread)
