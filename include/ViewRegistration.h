@@ -8,8 +8,8 @@
 
 class ViewRegistration : public View {
  public:
-  ViewRegistration(const http::request<http::string_body> &_req,
-                   const std::shared_ptr<sql::Connection> &_conn, int _userId);
+  ViewRegistration(const http::request<http::string_body> &_req, const std::shared_ptr<sql::Connection> &_conn,
+                   int _userId, std::string _ip);
 
   http::response<http::string_body> get() override;
   http::response<http::string_body> post() override;
@@ -19,6 +19,8 @@ class ViewRegistration : public View {
   virtual ~ViewRegistration() = default;
 
  private:
+  std::string ip;
+
   bool isPassword(const std::string &value);
   bool isEmail(const std::string &value);
   bool isLogin(const std::string &value);

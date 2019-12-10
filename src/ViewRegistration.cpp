@@ -3,6 +3,8 @@
 #include <cppconn/exception.h>
 #include <cppconn/prepared_statement.h>
 #include <cppconn/resultset.h>
+
+#include <utility>
 #include "Md5.h"
 
 bool ViewRegistration::isPassword(const std::string &value) {
@@ -59,7 +61,6 @@ http::response<http::string_body> ViewRegistration::post() {
           user_id = user->getInt(1);
         }
 
-        srand(time(0));
         pas += randomString(20);
         pas = md5(pas);
 
@@ -184,10 +185,10 @@ http::response<http::string_body> ViewRegistration::put() {
   return defaultPlug();
 }
 
-ViewRegistration::ViewRegistration(
-    const http::request<http::string_body> &_req,
-    const std::shared_ptr<sql::Connection> &_conn, int _userId)
-    : View(_req, _conn, _userId) {}
+ViewRegistration::ViewRegistration(const http::request<http::string_body> &_req,
+                                   const std::shared_ptr<sql::Connection> &_conn,
+                                   int _userId, std::string _ip)
+    : View(_req, _conn, _userId), ip(std::move(_ip)) {}
 
 int ViewRegistration::returnUser(const std::string &password,
                                  const std::string &value) {
@@ -227,9 +228,18 @@ std::string ViewRegistration::randomString(int size) {
 
 void ViewRegistration::createToken(const std::string &token,
                                    const int &userId) {
+  try {
+
+
+
   std::unique_ptr<sql::PreparedStatement> tokenStmt(conn->prepareStatement(
-      "INSERT  INTO token(user_id, token) VALUES (?,?);"));
+      "INSERT  INTO token(user_id, token, ip) VALUES (?, ?, ?);"));
   tokenStmt->setInt(1, userId);
   tokenStmt->setString(2, token);
+  tokenStmt->setString(3, md5(ip));
   if (tokenStmt->execute()) throw "server error";
+  } catch (sql::SQLException &e) {
+    std::cout << e.what() << std::endl;
+  }
+
 }

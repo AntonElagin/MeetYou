@@ -13,6 +13,7 @@
 #include "ViewOther.h"
 #include "ViewRegistration.h"
 #include "ViewUser.h"
+#include "ViewEvent.h"
 
 namespace http = boost::beast::http;
 
@@ -20,6 +21,7 @@ class Router {
   http::request<http::string_body> req;
   std::shared_ptr<sql::Connection> conn;
   sql::Driver* driver;
+  std::string ip;
   int userId;
   // Таблица для проверки необходимости авторизации при get запросе
   std::unordered_map<std::string, bool> authGetMap;
@@ -33,18 +35,18 @@ class Router {
 
  public:
   template <class Send>
-  void startRouting(Send&& send);
+  void startRouting(Send &&send);
 
-  explicit Router(http::request<http::string_body> req);
+  explicit Router(http::request<http::string_body> req, const std::string &ip);
 };
 
 template <class Send>
-void Router::startRouting(Send&& send) {
+void Router::startRouting(Send &&send) {
   std::regex reg{"/[^?]*"};
   std::smatch iterator;
 
   std::unique_ptr<View> controller;
-  AuthMiddleware authMiddleware(conn, req);
+  AuthMiddleware authMiddleware(conn, req, ip);
   bool authFlag = authMiddleware.isAuth();
   userId = authMiddleware.getUserId();
   std::string target = req.target().to_string();

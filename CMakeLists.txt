@@ -31,7 +31,8 @@ set(ALL_SOURCES
         ${SRC_DIR}/Runner.cpp
         ${SRC_DIR}/Queue.cpp
         ${SRC_DIR}/ViewOther.cpp
-        ${SRC_DIR}/ViewUser.cpp)
+        ${SRC_DIR}/ViewUser.cpp
+        ${SRC_DIR}/ViewEvent.cpp)
 set(ALL_HEADERS
         ${INC_DIR}/Router.h
         ${INC_DIR}/Md5.h
@@ -51,7 +52,8 @@ set(ALL_HEADERS
         ${INC_DIR}/Queue.h
         ${INC_DIR}/Work.h
         ${INC_DIR}/ViewOther.h
-        ${INC_DIR}/ViewUser.h)
+        ${INC_DIR}/ViewUser.h
+        ${INC_DIR}/ViewEvent.h)
 
 
 find_package (Boost REQUIRED COMPONENTS system filesystem)
