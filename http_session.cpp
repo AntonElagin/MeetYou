@@ -3,6 +3,7 @@
 #include "websocket_session.hpp"
 #include <boost/config.hpp>
 #include <iostream>
+#include <regex>
 
 #define BOOST_NO_CXX14_GENERIC_LAMBDAS
 
@@ -202,15 +203,23 @@ struct http_session::send_lambda {
 
 //------------------------------------------------------------------------------
 
-http_session::http_session(
+http_session::
+http_session(
         tcp::socket &&socket,
         boost::shared_ptr<shared_state> const &state)
-        : stream_(std::move(socket)), state_(state) {}
+        : stream_(std::move(socket)), state_(state) {
+}
 
-void http_session::run() { do_read(); }
+void
+http_session::
+run() {
+    do_read();
+}
 
 // Report a failure
-void http_session::fail(beast::error_code ec, char const *what) {
+void
+http_session::
+fail(beast::error_code ec, char const *what) {
     // Don't report on canceled operations
     if (ec == net::error::operation_aborted)
         return;
@@ -218,9 +227,12 @@ void http_session::fail(beast::error_code ec, char const *what) {
     std::cerr << what << ": " << ec.message() << "\n";
 }
 
-void http_session::do_read() {
+void
+http_session::
+do_read() {
     // Construct a new parser for each message
     parser_.emplace();
+
     // Apply a reasonable limit to the allowed size
     // of the body in bytes to prevent abuse.
     parser_->body_limit(10000);
@@ -229,11 +241,18 @@ void http_session::do_read() {
     stream_.expires_after(std::chrono::seconds(30));
 
     // Read a request
-    http::async_read(stream_, buffer_, parser_->get(),
-                     beast::bind_front_handler(&http_session::on_read, shared_from_this()));
+    http::async_read(
+            stream_,
+            buffer_,
+            parser_->get(),
+            beast::bind_front_handler(
+                    &http_session::on_read,
+                    shared_from_this()));
 }
 
-void http_session::on_read(beast::error_code ec, std::size_t) {
+void
+http_session::
+on_read(beast::error_code ec, std::size_t) {
     // This means they closed the connection
     if (ec == http::error::end_of_stream) {
         stream_.socket().shutdown(tcp::socket::shutdown_send, ec);
@@ -247,14 +266,24 @@ void http_session::on_read(beast::error_code ec, std::size_t) {
     // See if it is a WebSocket Upgrade
     if (websocket::is_upgrade(parser_->get())) {
         // Create a websocket session, transferring ownership
-        // of both the socket and the HTTP request.
-        auto kek2 = parser_->get().at(http::field::cookie);
-        ///проверка логина и пароля
-        auto kek = parser_->get().target();
+        //   auto kek2 = parser_->get().at(http::field::cookie);
+//        ///проверка логина и пароля
+        auto req = parser_->get();
+        beast::string_view cookie = req.at(http::field::cookie);
+        ///проверка cookie
+        auto target = req.target().to_string();
+        std::vector<std::string> params_list;
+        std::cmatch result;
+        std::regex r_chat("/chat\\?(id)=(\\w+)&encoding=text");
+        if (std::regex_match(target.c_str(), result, r_chat))
+            for (auto &x:result)
+                params_list.push_back(x);
         ///проверка прав доступа на вход в чат
+        ///нет проверки валидности запроса(без куки упадет все)
+        // of both the socket and the HTTP request.
         boost::make_shared<websocket_session>(
                 stream_.release_socket(),
-                state_)->run(parser_->release());
+                state_, std::stoi(params_list.at(2)))->run(parser_->release());
         return;
     }
 
@@ -300,7 +329,10 @@ void http_session::on_read(beast::error_code ec, std::size_t) {
     // This code uses the function object type send_lambda in
     // place of a generic lambda which is not available in C++11
     //
-    handle_request(state_->doc_root(), parser_->release(), send_lambda(*this));
+    handle_request(
+            state_->doc_root(),
+            parser_->release(),
+            send_lambda(*this));
 
 #endif
 }

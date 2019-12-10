@@ -1,3 +1,4 @@
+
 #ifndef BOOST_BEAST_EXAMPLE_WEBSOCKET_CHAT_MULTI_SHARED_STATE_HPP
 #define BOOST_BEAST_EXAMPLE_WEBSOCKET_CHAT_MULTI_SHARED_STATE_HPP
 
@@ -6,6 +7,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_set>
+#include <map>
 
 // Forward declaration
 class websocket_session;
@@ -16,18 +18,22 @@ class shared_state {
     // This mutex synchronizes all access to sessions_
     std::mutex mutex_;
     // Keep a list of all the connected clients
-    std::unordered_set<websocket_session *> sessions_;
+    std::map<int, std::unordered_set<websocket_session *>> sessions_;
 
 public:
-    explicit shared_state(std::string doc_root);
+    explicit
+    shared_state(std::string doc_root);
 
-    std::string const &doc_root() const noexcept { return doc_root_; }
+    std::string const &
+    doc_root() const noexcept {
+        return doc_root_;
+    }
 
-    void join(websocket_session *session);
+    void join(websocket_session *session, int chatid);
 
-    void leave(websocket_session *session);
+    void leave(websocket_session *session, int chatid);
 
-    void send(std::string message);
+    void send(std::string message, int chatid);
 };
 
 #endif
