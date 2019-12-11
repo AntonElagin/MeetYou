@@ -250,19 +250,15 @@ do_read() {
                     shared_from_this()));
 }
 
-void
-http_session::
-on_read(beast::error_code ec, std::size_t) {
+void http_session::on_read(beast::error_code ec, std::size_t) {
     // This means they closed the connection
     if (ec == http::error::end_of_stream) {
         stream_.socket().shutdown(tcp::socket::shutdown_send, ec);
         return;
     }
-
     // Handle the error, if any
     if (ec)
         return fail(ec, "read");
-
     // See if it is a WebSocket Upgrade
     if (websocket::is_upgrade(parser_->get())) {
         // Create a websocket session, transferring ownership
@@ -274,16 +270,18 @@ on_read(beast::error_code ec, std::size_t) {
         auto target = req.target().to_string();
         std::vector<std::string> params_list;
         std::cmatch result;
-        std::regex r_chat("/chat\\?(id)=(\\w+)&encoding=text");
-        if (std::regex_match(target.c_str(), result, r_chat))
+        std::regex r_chat("/chat\\?(id)=(\\w+)");
+        if (std::regex_search(target.c_str(), result, r_chat))
             for (auto &x:result)
                 params_list.push_back(x);
         ///проверка прав доступа на вход в чат
         ///нет проверки валидности запроса(без куки упадет все)
         // of both the socket and the HTTP request.
-        boost::make_shared<websocket_session>(
-                stream_.release_socket(),
-                state_, std::stoi(params_list.at(2)))->run(parser_->release());
+        sql::Driver *driver = get_driver_instance();
+        std::shared_ptr<sql::Connection> conn(driver->connect("tcp://127.0.0.1:3306", "root", "167839"));
+        conn->setSchema("meetyou");
+        boost::make_shared<websocket_session>(stream_.release_socket(),
+                                              state_, conn, std::stoi(params_list.at(2)))->run(parser_->release());
         return;
     }
 
@@ -337,20 +335,16 @@ on_read(beast::error_code ec, std::size_t) {
 #endif
 }
 
-void
-http_session::
-on_write(beast::error_code ec, std::size_t, bool close) {
+void http_session::on_write(beast::error_code ec, std::size_t, bool close) {
     // Handle the error, if any
     if (ec)
         return fail(ec, "write");
-
     if (close) {
         // This means we should close the connection, usually because
         // the response indicated the "Connection: close" semantic.
         stream_.socket().shutdown(tcp::socket::shutdown_send, ec);
         return;
     }
-
     // Read another request
     do_read();
 }

@@ -22,9 +22,7 @@ leave(websocket_session *session, int chatid) {
 }
 
 // Broadcast a message to all websocket client sessions
-void
-shared_state::
-send(std::string message, int chatid) {
+void shared_state::send(std::string message, int chatid) {
     // Put the message in a shared pointer so we can re-use it for each client
     auto const ss = boost::make_shared<std::string const>(std::move(message));
     // Make a local list of all the weak pointers representing

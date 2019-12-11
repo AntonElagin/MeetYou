@@ -1,16 +1,3 @@
-//
-// Copyright (c) 2016-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
-//
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
-// Official repository: https://github.com/boostorg/beast
-//
-//------------------------------------------------------------------------------
-//
-// Example: WebSocket client, asynchronous
-//
-//------------------------------------------------------------------------------
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
 #include <boost/asio/strand.hpp>
@@ -19,6 +6,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <thread>
 
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>
@@ -74,14 +62,29 @@ public:
             req.set(http::field::cookie, "login=kek&pass=mda");
         }));
         // Perform the websocket handshake
-        ws_.async_handshake(host_, "/chat?id=36",
+        ws_.async_handshake(host_, "/chat?id=3",
                             beast::bind_front_handler(&session::on_handshake, shared_from_this()));
     }
 
     void on_handshake(beast::error_code ec) {
-        if (ec)
-            return fail(ec, "handshake");
-        // Send the message
+        if (ec)return fail(ec, "handshake");
+        std::string textik;
+        auto func = [&]() {
+            while (true) {
+                beast::flat_buffer buffer;
+                ws_.read(buffer);
+                if (ec) return fail(ec, "read");
+                std::cout << beast::make_printable(buffer.data()) << std::endl;
+            }
+        };
+        std::thread async_read(func);
+        std::string str;
+        while (true) {
+            getline(std::cin, str);
+            printf("\b\b");
+            ws_.write(net::buffer(str), ec);
+            if (ec) return fail(ec, "write");
+        }
         ws_.async_write(net::buffer(text_), beast::bind_front_handler(&session::on_write, shared_from_this()));
     }
 

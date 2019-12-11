@@ -8,7 +8,9 @@
 #include <memory>
 #include <string>
 #include <vector>
-
+#include <iostream>
+#include "View.h"
+#include <cppconn/driver.h>
 namespace beast = boost::beast;                 // from <boost/beast.hpp>
 namespace http = beast::http;                   // from <boost/beast/http.hpp>
 namespace websocket = beast::websocket;         // from <boost/beast/websocket.hpp>
@@ -21,10 +23,12 @@ class shared_state;
 */
 class websocket_session : public boost::enable_shared_from_this<websocket_session> {
     beast::flat_buffer buffer_;
+    std::shared_ptr<sql::Connection> conn;
     websocket::stream<beast::tcp_stream> ws_;
     boost::shared_ptr<shared_state> state_;
     std::vector<boost::shared_ptr<std::string const>> queue_;
     int chatid;
+    int userid = 2;
 
     void fail(beast::error_code ec, char const *what);
 
@@ -35,17 +39,20 @@ class websocket_session : public boost::enable_shared_from_this<websocket_sessio
     void on_write(beast::error_code ec, std::size_t bytes_transferred);
 
 public:
-    websocket_session(tcp::socket &&socket, boost::shared_ptr<shared_state> const &state, int chatid);
+    websocket_session(tcp::socket &&socket, boost::shared_ptr<shared_state> const &state,
+                      std::shared_ptr<sql::Connection> conn, int chatid);
 
     ~websocket_session();
 
     template<class Body, class Allocator>
-    void
-    run(http::request<Body, http::basic_fields<Allocator>> req);
+    void run(http::request<Body, http::basic_fields<Allocator>> req);
 
     // Send a message
-    void
-    send(boost::shared_ptr<std::string const> const &ss);
+    void send(boost::shared_ptr<std::string const> const &ss);
+
+    void send_single(boost::shared_ptr<std::string const> const &ss);
+
+    void save_message();
 
 private:
     void
@@ -76,5 +83,6 @@ run(http::request<Body, http::basic_fields<Allocator>> req) {
                     &websocket_session::on_accept,
                     shared_from_this()));
 }
+
 
 #endif
