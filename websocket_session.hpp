@@ -11,6 +11,7 @@
 #include <iostream>
 #include "View.h"
 #include <cppconn/driver.h>
+#include <sstream>
 namespace beast = boost::beast;                 // from <boost/beast.hpp>
 namespace http = beast::http;                   // from <boost/beast/http.hpp>
 namespace websocket = beast::websocket;         // from <boost/beast/websocket.hpp>
@@ -50,38 +51,19 @@ public:
     // Send a message
     void send(boost::shared_ptr<std::string const> const &ss);
 
-    void send_single(boost::shared_ptr<std::string const> const &ss);
 
     void save_message();
 
 private:
-    void
-    on_send(boost::shared_ptr<std::string const> const &ss);
+    void on_send(boost::shared_ptr<std::string const> const &ss);
 };
 
 template<class Body, class Allocator>
-void
-websocket_session::
-run(http::request<Body, http::basic_fields<Allocator>> req) {
+void websocket_session::run(http::request<Body, http::basic_fields<Allocator>> req) {
     // Set suggested timeout settings for the websocket
-    ws_.set_option(
-            websocket::stream_base::timeout::suggested(
-                    beast::role_type::server));
-
-    // Set a decorator to change the Server of the handshake
-    ws_.set_option(websocket::stream_base::decorator(
-            [](websocket::response_type &res) {
-                res.set(http::field::server,
-                        std::string(BOOST_BEAST_VERSION_STRING) +
-                        " websocket-chat-multi");
-            }));
-
+    ws_.set_option(websocket::stream_base::timeout::suggested(beast::role_type::server));
     // Accept the websocket handshake
-    ws_.async_accept(
-            req,
-            beast::bind_front_handler(
-                    &websocket_session::on_accept,
-                    shared_from_this()));
+    ws_.async_accept(req, beast::bind_front_handler(&websocket_session::on_accept, shared_from_this()));
 }
 
 

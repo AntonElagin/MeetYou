@@ -274,14 +274,15 @@ void http_session::on_read(beast::error_code ec, std::size_t) {
         if (std::regex_search(target.c_str(), result, r_chat))
             for (auto &x:result)
                 params_list.push_back(x);
-        ///проверка прав доступа на вход в чат
+        ///select from result_table where user_id=id and chatid=id\
+        /// if seleected when continue
         ///нет проверки валидности запроса(без куки упадет все)
         // of both the socket and the HTTP request.
         sql::Driver *driver = get_driver_instance();
         std::shared_ptr<sql::Connection> conn(driver->connect("tcp://127.0.0.1:3306", "root", "167839"));
         conn->setSchema("meetyou");
-        boost::make_shared<websocket_session>(stream_.release_socket(),
-                                              state_, conn, std::stoi(params_list.at(2)))->run(parser_->release());
+        boost::make_shared<websocket_session>(stream_.release_socket(), state_, conn,
+                                              std::stoi(params_list.at(2)))->run(parser_->release());
         return;
     }
 

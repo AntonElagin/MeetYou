@@ -1,4 +1,5 @@
 #include "websocket_session.hpp"
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 websocket_session::
 websocket_session(tcp::socket &&socket, boost::shared_ptr<shared_state> const &state,
@@ -48,7 +49,9 @@ void websocket_session::on_accept(beast::error_code ec) {
 void websocket_session::on_read(beast::error_code ec, std::size_t) {
     // Handle the error, if any
     if (ec) return fail(ec, "read");
-    auto message_text_ws = beast::buffers_to_string(buffer_.data());
+    boost::posix_time::ptime timeLocal = boost::posix_time::second_clock::local_time();
+    auto message_text_ws = "login : " + boost::posix_time::to_simple_string(timeLocal) + " " +
+                           beast::buffers_to_string(buffer_.data());
     // Send to all connections
     std::unique_ptr<sql::PreparedStatement> stmt(conn->prepareStatement(
             "INSERT INTO `Message` (`publication_date`, `body`, `author_id`, `chat_id`) VALUES (NOW(), ?, ?, ?)"));
@@ -71,9 +74,6 @@ void websocket_session::send(boost::shared_ptr<std::string const> const &ss) {
     net::post(ws_.get_executor(), beast::bind_front_handler(&websocket_session::on_send, shared_from_this(), ss));
 }
 
-void websocket_session::send_single(boost::shared_ptr<std::string const> const &ss) {
-
-}
 
 void websocket_session::on_send(boost::shared_ptr<std::string const> const &ss) {
     // Always add to queue
