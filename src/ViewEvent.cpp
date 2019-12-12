@@ -17,9 +17,8 @@ http::response<http::string_body> ViewEvent::get() {
             "SELECT id, type, description, date, admin FROM event WHERE name = ?;"));
         eventStmt->setString(1, name);
         std::unique_ptr<sql::ResultSet> event(eventStmt->executeQuery());
-        int eventId = -1;
         while (event->next()) {
-          eventId = event->getInt(1);
+          respBody["event_id"] = event->getInt(1);
           respBody["type"] = event->getString(2);
           respBody["description"] = event->getString(3);
           respBody["date"] = event->getString(4);
@@ -28,7 +27,7 @@ http::response<http::string_body> ViewEvent::get() {
         std::unique_ptr<sql::PreparedStatement> userStmt(conn->prepareStatement(
             "select login ,name, surname, u.id from MeetYou.user u\n"
             "INNER JOIN MeetYou.followers f ON ( f.event_id = ? AND u.id = f.user_id) ;"));
-        userStmt->setInt(1, eventId);
+        userStmt->setInt(1, respBody["event_id"]);
         std::unique_ptr<sql::ResultSet> followers(userStmt->executeQuery());
         while (followers->next()) {
           respBody["followers"] += {{"login",followers->getString(1)},
