@@ -17,10 +17,10 @@ std::unique_ptr<View> Router::getView(const std::string& path) {
     return std::unique_ptr<View>(new ViewUser(req, conn, userId));
   else if (path == "/event")
     return std::unique_ptr<View>(new ViewEvent(req, conn, userId));
-  else if (path == "/chat")
-    return std::unique_ptr<View>(new ViewOther(req, conn, userId));
-  else if (path == "/hobby")
-    return std::unique_ptr<View>(new ViewOther(req, conn, userId));
+  else if (path == "/user/follow")
+    return std::unique_ptr<View>(new ViewUserFollow(req, conn, userId));
+  else if (path == "/event/follow")
+    return std::unique_ptr<View>(new ViewFollow(req, conn, userId));
   else if (path == "/other")
     return std::unique_ptr<View>(new ViewOther(req, conn, userId));
   else

@@ -1,11 +1,11 @@
-//
-// Created by anton on 12.12.2019.
-//
-
 #ifndef TECHPROJECT_VIEWUSERFOLLOW_H
 #define TECHPROJECT_VIEWUSERFOLLOW_H
 
-
+#include "View.h"
+#include <nlohmann/json.hpp>
+#include <cppconn/resultset.h>
+#include <cppconn/prepared_statement.h>
+#include <cppconn/connection.h>
 
 class ViewUserFollow : public View  {
 private:

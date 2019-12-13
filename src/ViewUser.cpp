@@ -13,8 +13,14 @@ http::response<http::string_body> ViewUser::put() {
 
 http::response<http::string_body> ViewUser::get() {
   boost::beast::http::response<http::string_body> res;
-  //  TODO : Падает на невалидном JSON
-  nlohmann::json js = nlohmann::json::parse(req.body());
+  res.set(http::field::content_type, "application/json");
+  nlohmann::json js;
+  try {
+    js = nlohmann::json::parse(req.body());
+  } catch (nlohmann::json::parse_error &e) {
+    return templateReturn(400, "JSON error");
+  }
+
   int userId = -1;
   if (js.contains("user_id") || js.contains("login")) {
     std::string login;
@@ -43,31 +49,20 @@ http::response<http::string_body> ViewUser::get() {
       res.set(http::field::content_length, respString.length());
       return res;
     }
-
-    nlohmann::json body;
-    body["status"] = 204;
-    body["message"] = "No user or data";
-
-    res.result(204);
-    res.body() = body.dump();
-    res.set(http::field::content_length, body.dump().size());
-    return res;
+    return templateReturn(204, "No user or data");
   }
-    nlohmann::json exBody;
-    res.result(400);
-    exBody["status"] = 400;
-    exBody["message"] = "Invalid user data or Json";
-    std::string exBodyStr = exBody.dump();
-    res.set(http::field::content_length, exBodyStr.size());
-    res.body() = exBodyStr;
-    res.prepare_payload();
-    return res;
+    return templateReturn(400, "Invalid data");
 }
 
 http::response<http::string_body> ViewUser::post() {
   boost::beast::http::response<http::string_body> res;
-  //  TODO : Падает на невалидном JSON
-  nlohmann::json js = nlohmann::json::parse(req.body());
+  res.set(http::field::content_type, "application/json");
+  nlohmann::json js;
+  try {
+    js = nlohmann::json::parse(req.body());
+  } catch (nlohmann::json::parse_error &e) {
+    return templateReturn(400, "JSON error");
+  }
   if (js.contains("user_id") && js.contains("name")
       && js.contains("surname") && js.contains("sex")
       && js.contains("location") && js.contains("birthday")) {
@@ -90,24 +85,12 @@ http::response<http::string_body> ViewUser::post() {
       userStmt->setInt(6, id);
       nlohmann::json respBody;
       if (!userStmt->execute()) {
-        respBody["status"] = 200;
-        respBody["message"] = "OK";
-        std::string respString(respBody.dump());
-        res.result(200);
-        res.body() = respString;
-        res.set(http::field::content_length, respString.length());
-        return res;
+        return templateReturn(200, "OK");
       }
       throw "server error";
     }
-    nlohmann::json respBody;
-    respBody["status"] = 403;
-    respBody["message"] = "access denied";
-    std::string respString(respBody.dump());
-    res.result(403);
-    res.body() = respString;
-    res.set(http::field::content_length, respString.length());
-    return res;
+
+    return templateReturn(403, "Access denied");
   }
 }
 

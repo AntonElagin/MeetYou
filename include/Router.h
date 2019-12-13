@@ -14,6 +14,8 @@
 #include "ViewRegistration.h"
 #include "ViewUser.h"
 #include "ViewEvent.h"
+#include "ViewFollow.h"
+#include "ViewUserFollow.h"
 
 namespace http = boost::beast::http;
 
@@ -42,6 +44,7 @@ class Router {
 
 template <class Send>
 void Router::startRouting(Send &&send) {
+try {
   std::regex reg{"/[^?]*"};
   std::smatch iterator;
 
@@ -78,6 +81,17 @@ void Router::startRouting(Send &&send) {
       return send(std::move(authException()));
     }
     return send(std::move(methodException()));
+  }
+} catch(...) {
+  http::response<http::string_body> res;
+  res.set(http::field::content_type, "application/json");
+  res.result(500);
+  nlohmann::json respBody;
+  respBody["status"] = 500;
+  respBody["message"] = "server error (routing)";
+  res.body() = respBody.dump();
+  res.set(http::field::content_length, respBody.dump().length());
+  send(std::move(res));
   }
 }
 

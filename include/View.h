@@ -21,7 +21,9 @@ class View {
   std::shared_ptr<sql::Connection> conn;
   http::request<http::string_body> req;
   int userId;
+
   http::response<http::string_body> defaultPlug();
+  http::response<http::string_body> templateReturn(int status, const std::string& message);
 
  public:
   View(http::request<http::string_body> _req,
@@ -63,6 +65,7 @@ class View {
             return true;
         else return false;
     }
+
   virtual ~View() = default;
 };
 

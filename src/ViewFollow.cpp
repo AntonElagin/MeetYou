@@ -10,79 +10,52 @@ http::response<http::string_body> ViewFollow::get() {
 }
 
 http::response<http::string_body> ViewFollow::post() {
-  boost::beast::http::response<http::string_body> res;
-  //  TODO : Падает на невалидном JSON
-  nlohmann::json respBody;
-  nlohmann::json js = nlohmann::json::parse(req.body());
+  nlohmann::json js;
+  try {
+    js = nlohmann::json::parse(req.body());
+  } catch (nlohmann::json::parse_error &e) {
+    return templateReturn(400, "JSON error");
+  }
   if (js.contains("event_id")) {
     if (js["event_id"].is_number_unsigned()) {
+      std::unique_ptr<sql::PreparedStatement> isFollowerStmt(conn->prepareStatement("Select * from followers where event_id = ? and user_id = ?"));
+      isFollowerStmt->setInt(1, js["event_id"]);
+      isFollowerStmt->setInt(2, userId);
+      std::unique_ptr<sql::ResultSet> user(isFollowerStmt->executeQuery());
+      while (user->next()) {
+        return templateReturn(200, "OK");
+      }
       std::unique_ptr<sql::PreparedStatement> followStmt(conn->prepareStatement(
-          "INSERT OR IGNORE INTO followers (event_id,user_id) VALUES (?, ?);"));
+          "INSERT IGNORE INTO followers (event_id,user_id) VALUES (?, ?);"));
       followStmt->setInt(1, js["event_id"]);
       followStmt->setInt(2, userId);
       followStmt->execute();
-      respBody["status"] = 200;
-      respBody["message"] = "OK";
-      res.result(200);
-      res.body() = respBody.dump();
-      res.set(http::field::content_length, respBody.dump().size());
-      return res;
+      return templateReturn(200, "OK");
     }
-    res.result(400);
-    respBody["status"] = 400;
-    respBody["message"] = "Invalid event_id";
-    std::string exBodyStr = respBody.dump();
-    res.set(http::field::content_length, exBodyStr.size());
-    res.body() = exBodyStr;
-    res.prepare_payload();
-    return res;
+    return templateReturn(400, "Invalid event_id");
   }
-  res.result(400);
-  respBody["status"] = 400;
-  respBody["message"] = "Invalid json";
-  std::string exBodyStr = respBody.dump();
-  res.set(http::field::content_length, exBodyStr.size());
-  res.body() = exBodyStr;
-  res.prepare_payload();
-  return res;
+  return templateReturn(400, "Invalid data");;
 }
 
 http::response<http::string_body> ViewFollow::delete_() {
-  boost::beast::http::response<http::string_body> res;
-  //  TODO : Падает на невалидном JSON
-  nlohmann::json respBody;
-  nlohmann::json js = nlohmann::json::parse(req.body());
+  nlohmann::json js;
+  try {
+    js = nlohmann::json::parse(req.body());
+  } catch (nlohmann::json::parse_error &e) {
+    return templateReturn(400, "JSON error");
+  }
   if (js.contains("event_id")) {
     if (js["event_id"].is_number_unsigned()) {
       std::unique_ptr<sql::PreparedStatement> followStmt(conn->prepareStatement(
-          "DELETE FROM followers WHERE  event_id = ? AND user_id = ?);"));
+          "DELETE FROM followers WHERE  event_id = ? AND user_id = ?;"));
       followStmt->setInt(1, js["event_id"]);
       followStmt->setInt(2, userId);
       followStmt->execute();
-      respBody["status"] = 200;
-      respBody["message"] = "OK";
-      res.result(200);
-      res.body() = respBody.dump();
-      res.set(http::field::content_length, respBody.dump().size());
-      return res;
+      return templateReturn(200, "OK");
     }
-    res.result(400);
-    respBody["status"] = 400;
-    respBody["message"] = "Invalid event_id";
-    std::string exBodyStr = respBody.dump();
-    res.set(http::field::content_length, exBodyStr.size());
-    res.body() = exBodyStr;
-    res.prepare_payload();
-    return res;
+    return templateReturn(400, "Invalid event_id");
   }
-  res.result(400);
-  respBody["status"] = 400;
-  respBody["message"] = "Invalid json";
-  std::string exBodyStr = respBody.dump();
-  res.set(http::field::content_length, exBodyStr.size());
-  res.body() = exBodyStr;
-  res.prepare_payload();
-  return res;
+  return templateReturn(400, "Invalid data");
 }
 
 http::response<http::string_body> ViewFollow::put() {

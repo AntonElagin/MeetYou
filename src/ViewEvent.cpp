@@ -6,7 +6,13 @@ ViewEvent::ViewEvent(const http::request<http::string_body> &_req, const std::sh
 
 http::response<http::string_body> ViewEvent::get() {
   boost::beast::http::response<http::string_body>res;
-  nlohmann::json js = nlohmann::json::parse(req.body());
+  res.set(http::field::content_type, "application/json");
+  nlohmann::json js;
+  try {
+    js = nlohmann::json::parse(req.body());
+  } catch (nlohmann::json::parse_error &e) {
+    return templateReturn(400, "JSON error");
+  }
   nlohmann::json respBody;
   if (js.contains("name")) {
     std::string name = js["name"];
@@ -35,33 +41,29 @@ http::response<http::string_body> ViewEvent::get() {
                                     {"surname",followers->getString(3)},
                                     {"user_id",followers->getString(4)},};
         }
-        res.result(200);;
+        res.result(200);
+        std::string body = respBody.dump();
+        res.body() = body;
+        res.set(http::field::content_length, body.length());
+        return res;
       }
       catch (sql::SQLException & e) {
-        res.result(500);
-        respBody["status"] = 500;
-        respBody["message"] = e.what();
+//        TODO : Возвращаем 500 или 400(если название дублируется)
+        return templateReturn(500, e.what());
       }
-      catch (...) {
-        res.result(500);
-        respBody["status"] = 500;
-        respBody["message"] = "Server error";
-      }
-      std::string body = respBody.dump();
-      res.body() = body;
-      res.set(http::field::content_length, body.length());
-      return res;
     }
-  res.result(400);
-  respBody["status"] = 400;
-  respBody["message"] = "Invalid count of params or JSON";
-  return res;
+  return templateReturn(400, "Invalid params or params count");
 }
 
 http::response<http::string_body> ViewEvent::post() {
   boost::beast::http::response<http::string_body>res;
-  nlohmann::json js = nlohmann::json::parse(req.body());
-  nlohmann::json respBody;
+  res.set(http::field::content_type, "application/json");
+  nlohmann::json js;
+  try {
+    js = nlohmann::json::parse(req.body());
+  } catch (nlohmann::json::parse_error &e) {
+    return templateReturn(400, "JSON error");
+  }
   if (js.contains("name") && js.contains("type") && js.contains("description") && js.contains("date")) {
     std::string name = js["name"],
         type = js["type"],
@@ -79,33 +81,16 @@ http::response<http::string_body> ViewEvent::post() {
         userStmt->setString(4, date);
         userStmt->setInt(5, userId);
         if (userStmt->execute()) throw "server error";
-        res.result(200);
-        respBody["status"] = 200;
-        respBody["message"] = "OK";
+        return templateReturn(200, "OK");
       }
       catch (sql::SQLException & e) {
-        res.result(500);
-        respBody["status"] = 500;
-        respBody["message"] = e.what();
+//        TODO : ВОзвращаем 500 или 400(если название дублируется)
+        return templateReturn(500, e.what());
       }
-      catch (...) {
-        res.result(500);
-        respBody["status"] = 500;
-        respBody["message"] = "Server error";
-      }
-      std::string body = respBody.dump();
-      res.body() = body;
-      res.set(http::field::content_length, body.length());
-      return res;
     }
-    res.result(400);
-    respBody["status"] = 400;
-    respBody["message"] = "Invalid data";
+    return templateReturn(400, "Invalid data");
   }
-  res.result(400);
-  respBody["status"] = 400;
-  respBody["message"] = "Invalid count of params or JSON";
-  return res;
+  return templateReturn(400, "Invalid params or params count");
 }
 
 http::response<http::string_body> ViewEvent::delete_() {
@@ -113,8 +98,14 @@ http::response<http::string_body> ViewEvent::delete_() {
 }
 
 http::response<http::string_body> ViewEvent::put() {
-  boost::beast::http::response<http::string_body>res;
-  nlohmann::json js = nlohmann::json::parse(req.body());
+  boost::beast::http::response<http::string_body> res;
+  res.set(http::field::content_type, "application/json");
+  nlohmann::json js;
+  try {
+    js = nlohmann::json::parse(req.body());
+  } catch (nlohmann::json::parse_error &e) {
+    return templateReturn(400, "JSON error");
+  }
   nlohmann::json respBody;
   if (js.contains("name") && js.contains("type") && js.contains("description") && js.contains("date")) {
     std::string name = js["name"],
@@ -133,35 +124,17 @@ http::response<http::string_body> ViewEvent::put() {
         userStmt->setString(3, description);
         userStmt->setString(4, date);
         userStmt->setInt(6, userId);
-        userStmt->setString(5,name);
+        userStmt->setString(5, name);
         if (userStmt->execute()) throw "server error";
-        res.result(200);
-        respBody["status"] = 200;
-        respBody["message"] = "OK";
+        return templateReturn(200, "OK");
       }
-      catch (sql::SQLException & e) {
-        res.result(500);
-        respBody["status"] = 500;
-        respBody["message"] = e.what();
+      catch (sql::SQLException &e) {
+        return templateReturn(500, e.what());
       }
-      catch (...) {
-        res.result(500);
-        respBody["status"] = 500;
-        respBody["message"] = "Server error";
-      }
-      std::string body = respBody.dump();
-      res.body() = body;
-      res.set(http::field::content_length, body.length());
-      return res;
     }
-    res.result(400);
-    respBody["status"] = 400;
-    respBody["message"] = "Invalid data";
+    return templateReturn(400, "Invalid some data");
   }
-  res.result(400);
-  respBody["status"] = 400;
-  respBody["message"] = "Invalid count of params or JSON";
-  return res;
+  return templateReturn(400, "Invalid params or params count");
 }
 
 bool ViewEvent::isName(const std::string &value) {

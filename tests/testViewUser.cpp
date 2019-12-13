@@ -4,12 +4,12 @@
 #include <boost/asio.hpp>
 #include <nlohmann/json.hpp>
 #include <Md5.h>
-#include "ViewOther.h"
+#include "ViewUser.h"
 #include "ViewRegistration.h"
 
 
 class ViewRegTest : public testing::Test {
- protected:
+protected:
   void SetUp() override {
     req.version(11);
     req.set(http::field::user_agent, "test");
@@ -43,7 +43,7 @@ class ViewRegTest : public testing::Test {
   http::request<http::string_body> req;
 };
 
-TEST_F(ViewRegTest, Registeration) {
+TEST_F(ViewRegTest, post) {
   nlohmann::json body;
   body["login"] = "Cheburashka";
   body["password"] = "Henna02";

@@ -19,3 +19,17 @@ http::response<http::string_body> View::defaultPlug() {
   res.set(http::field::content_length, s.length());
   return res;
 }
+
+http::response<http::string_body> View::templateReturn(int status, const std::string& message) {
+  http::response<http::string_body> res;
+  res.result(status);
+  res.set(http::field::content_type, "json/application");
+  res.keep_alive(req.keep_alive());
+  nlohmann::json body;
+  body["status"] = status;
+  body["message"] = message;
+  std::string s = body.dump();
+  res.body() = s;
+  res.set(http::field::content_length, s.length());
+  return res;
+}

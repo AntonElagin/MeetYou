@@ -25,7 +25,7 @@ class ViewRegistration : public View {
   bool isEmail(const std::string &value);
   bool isLogin(const std::string &value);
   int returnUser(const std::string &password, const std::string &value);
-  std::string randomString(int size);
+  static std::string randomString(int size);
   void createToken(const std::string &token, const int &userId);
 };
 

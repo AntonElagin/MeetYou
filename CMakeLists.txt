@@ -33,7 +33,8 @@ set(ALL_SOURCES
         ${SRC_DIR}/ViewOther.cpp
         ${SRC_DIR}/ViewUser.cpp
         ${SRC_DIR}/ViewEvent.cpp
-        ${SRC_DIR}/ViewFollow.cpp)
+        ${SRC_DIR}/ViewFollow.cpp
+        ${SRC_DIR}/ViewUserFollow.cpp)
 set(ALL_HEADERS
         ${INC_DIR}/Router.h
         ${INC_DIR}/Md5.h
@@ -55,7 +56,8 @@ set(ALL_HEADERS
         ${INC_DIR}/ViewOther.h
         ${INC_DIR}/ViewUser.h
         ${INC_DIR}/ViewEvent.h
-        ${INC_DIR}/ViewFollow.h)
+        ${INC_DIR}/ViewFollow.h
+        ${INC_DIR}/ViewUserFollow.h)
 
 
 find_package (Boost REQUIRED COMPONENTS system filesystem)
@@ -109,6 +111,8 @@ set(SOURCE nlohmann/json.hpp
 include_directories(include)
 include_directories(nlohmann)
 link_libraries(mysqlcppconn Threads::Threads ${Boost_LIBRARIES})
-add_executable(Test tests/tests.cpp)
+add_executable(Test tests/tests.cpp
+        tests/testViewReg.cpp
+        tests/testViewUser.cpp)
 target_include_directories(Test PUBLIC ${GTEST_INCLUDE_DIRS})
 target_link_libraries(Test PUBLIC ${GTEST_LIBRARIES} pthread)

@@ -35,7 +35,13 @@ http::response<http::string_body> ViewRegistration::post() {
   std::string pas, log, eml;
   //  Парсинг body
 //  TODO : Падает на невалидном JSON
-  nlohmann::json js = nlohmann::json::parse(req.body());
+  nlohmann::json js;
+  try {
+    js = nlohmann::json::parse(req.body());
+  } catch (nlohmann::json::parse_error &e) {
+    return templateReturn(400, "JSON error");
+  }
+
   if (js.contains("password") && js.contains("login") && js.contains("email")) {
     pas = js.at("password");
     log = js.at("login");
@@ -81,7 +87,7 @@ http::response<http::string_body> ViewRegistration::post() {
         if (!std::regex_search(e.what(), reg)) {
           res.result(500);
           std::string error =
-              "{\n\"error\" : \"500\",\n \"message\" : \"server error\"\n}";
+              "{\n\"status\" : \"500\",\n \"message\" : \"server error\"\n}";
           res.body() = error;
           res.set(http::field::content_length, error.length());
           return res;
@@ -96,7 +102,7 @@ http::response<http::string_body> ViewRegistration::post() {
 
         body["login"] = log;
         body["email"] = eml;
-        body["error"] =
+        body["message"] =
             "Invalid " + iterator.str().erase(iterator.str().length() - 8,
                                               iterator.str().length() - 1);
         res.body() = body.dump();
@@ -106,40 +112,27 @@ http::response<http::string_body> ViewRegistration::post() {
         std::cout << "Bad bad error!" << std::endl;
       }
     }
-    nlohmann::json exBody;
-    res.result(400);
-    exBody["error"] = 400;
-    //  exBody["message"] = "JSON error";
     if (!isLogin(log)) {
-      exBody["login_message"] = "Invalid";
+      return templateReturn(400, "Invalid login");
     }
     if (!isEmail(eml)) {
-      exBody["email_message"] = "Invalid";
+      return templateReturn(400, "Invalid email");
     }
     if (!isPassword(pas)) {
-      exBody["password_message"] = "Invalid";
+      return templateReturn(400, "Invalid password");
     }
-    std::string exBodyStr = exBody.dump();
-    res.set(http::field::content_length, exBodyStr.size());
-    res.body() = exBodyStr;
-    res.prepare_payload();
-    return res;
   }
-  nlohmann::json exBody;
-  res.result(400);
-  exBody["error"] = 400;
-  exBody["message"] = "JSON error";
-  std::string exBodyStr = exBody.dump();
-  res.set(http::field::content_length, exBodyStr.size());
-  res.body() = exBodyStr;
-  res.prepare_payload();
-  return res;
+  return templateReturn(400, "Invalid params or params count");;
 }
 
 http::response<http::string_body> ViewRegistration::get() {
   boost::beast::http::response<http::string_body> res;
-  //  TODO : Падает на невалидном JSON
-  nlohmann::json js = nlohmann::json::parse(req.body());
+  nlohmann::json js;
+  try {
+    js = nlohmann::json::parse(req.body());
+  } catch (nlohmann::json::parse_error &e) {
+    return templateReturn(400, "JSON error");
+  }
   int userId = -1;
   if (js.contains("password") && js.contains("login")) {
     std::string password = js["password"];
@@ -160,25 +153,9 @@ http::response<http::string_body> ViewRegistration::get() {
       res.set(http::field::content_length, body.dump().size());
       return res;
     }
-    nlohmann::json exBody;
-    res.result(400);
-    exBody["status"] = 400;
-    exBody["message"] = "Invalid user data";
-    std::string exBodyStr = exBody.dump();
-    res.set(http::field::content_length, exBodyStr.size());
-    res.body() = exBodyStr;
-    res.prepare_payload();
-    return res;
+    return templateReturn(400, "Invalid user data");
   }
-  nlohmann::json exBody;
-  res.result(400);
-  exBody["status"] = 400;
-  exBody["message"] = "JSON error";
-  std::string exBodyStr = exBody.dump();
-  res.set(http::field::content_length, exBodyStr.size());
-  res.body() = exBodyStr;
-  res.prepare_payload();
-  return res;
+  return templateReturn(400, "JSON error");
 }
 
 http::response<http::string_body> ViewRegistration::put() {
@@ -229,9 +206,6 @@ std::string ViewRegistration::randomString(int size) {
 void ViewRegistration::createToken(const std::string &token,
                                    const int &userId) {
   try {
-
-
-
   std::unique_ptr<sql::PreparedStatement> tokenStmt(conn->prepareStatement(
       "INSERT  INTO token(user_id, token, ip) VALUES (?, ?, ?);"));
   tokenStmt->setInt(1, userId);
