@@ -1,5 +1,5 @@
-#ifndef TECHPROJECT_VIEWFOLLOW_H
-#define TECHPROJECT_VIEWFOLLOW_H
+#ifndef TECHPROJECT_VIEWEVENTFOLLOW_H
+#define TECHPROJECT_VIEWEVENTFOLLOW_H
 
 #include "View.h"
 #include <nlohmann/json.hpp>
@@ -7,12 +7,12 @@
 #include <cppconn/prepared_statement.h>
 #include <cppconn/connection.h>
 
-class ViewFollow : public View {
+class ViewEventFollow : public View {
 private:
 
 public:
-  ViewFollow(const http::request<http::string_body> &_req,
-             const std::shared_ptr<sql::Connection> &_conn, int _userId);
+  ViewEventFollow(const http::request<http::string_body> &_req,
+                  const std::shared_ptr<sql::Connection> &_conn, int _userId);
 
 // Заглушка
   http::response<http::string_body> get() override;
@@ -28,7 +28,7 @@ public:
 //  Заглушка
   http::response<http::string_body> put() override;
 
-  ~ViewFollow() override = default;
+  ~ViewEventFollow() override = default;
 };
 
-#endif //TECHPROJECT_VIEWFOLLOW_H
+#endif //TECHPROJECT_VIEWEVENTFOLLOW_H

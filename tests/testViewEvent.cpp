@@ -69,14 +69,17 @@ protected:
     std::unique_ptr<sql::PreparedStatement> Stmt(
         con->prepareStatement("Delete From user Where login = \"testlogin1321\""));
     Stmt->executeQuery();
+    std::unique_ptr<sql::PreparedStatement> del2(
+        con->prepareStatement("Delete From event Where name = \"event_name123\""));
+    del2->executeQuery();
+
   }
 
   sql::Driver *driver{};
   std::shared_ptr<sql::Connection> con;
   http::request<http::string_body> req;
-  int userId, eventId;
+  int userId{}, eventId{};
 };
-
 
 
 TEST_F(ViewEventTest, goodGet) {
@@ -136,17 +139,138 @@ TEST_F(ViewEventTest, badPutJSON) {
   ASSERT_EQ(body["status"], 400);
 }
 
-//TEST_F(ViewEventTest, goodPost) {
-//  nlohmann::json body;
-//  body["name"] = "event_name123";
-//  body["type"] = "event_name123";
-//  body["description"] = "event_name123";
-//
-//  std::string str = body.dump();
-//  req.body() = str;
-//  req.set(http::field::content_length, str.length());
-//  ViewEvent view(req, con, userId);
-//  std::string respBody = view.get().body();
-//  body = nlohmann::json::parse(respBody);
-//  ASSERT_EQ(body["name"], "namename");
-//}
+TEST_F(ViewEventTest, unfindGet) {
+  nlohmann::json body;
+  body["name"] = "event_name123";
+  body["type"] = "event_name123";
+  body["description"] = "event_name123";
+
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewEvent view(req, con, userId);
+  std::string respBody = view.get().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["status"], 404);
+}
+
+TEST_F(ViewEventTest, GoodPost) {
+  nlohmann::json body;
+  body["name"] = "event_name123";
+  body["type"] = "event_name123";
+  body["description"] = "event_name123";
+  body["date"] = "2020-12-12";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewEvent view(req, con, userId);
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["status"], 200);
+}
+
+TEST_F(ViewEventTest, badPost) {
+  nlohmann::json body;
+  body["name1"] = "event_name123";
+  body["type"] = "event_name123";
+  body["description"] = "event_name123";
+  body["date"] = "2020-12-12";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewEvent view(req, con, userId);
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Invalid params or params count");
+}
+
+TEST_F(ViewEventTest, badPost_name) {
+  nlohmann::json body;
+  body["name"] = "event_name";
+  body["type"] = "event_name123";
+  body["description"] = "event_name123";
+  body["date"] = "2020-12-12";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewEvent view(req, con, userId);
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Duplicate name");
+}
+
+TEST_F(ViewEventTest, badPost_nameStr) {
+  nlohmann::json body;
+  body["name"] = "eve";
+  body["type"] = "event_name123";
+  body["description"] = "event_name123";
+  body["date"] = "2020-12-12";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewEvent view(req, con, userId);
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Invalid name");
+}
+
+TEST_F(ViewEventTest, badPost_type) {
+  nlohmann::json body;
+  body["name"] = "event_name123";
+  body["type"] = "ev";
+  body["description"] = "event_name123";
+  body["date"] = "2020-12-12";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewEvent view(req, con, userId);
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Invalid type");
+}
+
+TEST_F(ViewEventTest, badPost_description) {
+  nlohmann::json body;
+  body["name"] = "event_name123";
+  body["type"] = "evvent_type";
+  body["description"] = "eve";
+  body["date"] = "2020-12-12";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewEvent view(req, con, userId);
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Invalid description");
+}
+
+TEST_F(ViewEventTest, badPost_date1) {
+  nlohmann::json body;
+  body["name"] = "event_name123";
+  body["type"] = "evvent_type";
+  body["description"] = "eveevent_name123";
+  body["date"] = "qwe";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewEvent view(req, con, userId);
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Invalid date");
+}
+
+
+TEST_F(ViewEventTest, badPost_date2) {
+  nlohmann::json body;
+  body["name"] = "event_name123";
+  body["type"] = "evvent_type";
+  body["description"] = "eveevent_name123";
+  body["date"] = "2018-12-12";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewEvent view(req, con, userId);
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Invalid date");
+}

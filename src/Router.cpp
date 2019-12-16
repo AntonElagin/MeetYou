@@ -27,7 +27,7 @@ std::unique_ptr<View> Router::getView(const std::string &path) {
   else if (path == "/user/follow")
     return std::unique_ptr<View>(new ViewUserFollow(req, conn, userId));
   else if (path == "/event/follow")
-    return std::unique_ptr<View>(new ViewFollow(req, conn, userId));
+    return std::unique_ptr<View>(new ViewEventFollow(req, conn, userId));
   else if (path == "/chat/message")
     return std::unique_ptr<View>(new ViewMessageChat(req, conn, userId));
   else if (path == "/chat/user")

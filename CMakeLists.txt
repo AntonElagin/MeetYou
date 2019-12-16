@@ -42,7 +42,7 @@ set(ALL_SOURCES
         ${SRC_DIR}/ViewOther.cpp
         ${SRC_DIR}/ViewUser.cpp
         ${SRC_DIR}/ViewEvent.cpp
-        ${SRC_DIR}/ViewFollow.cpp
+        ${SRC_DIR}/ViewEventFollow.cpp
         ${SRC_DIR}/ViewUserFollow.cpp)
 
 set(ALL_HEADERS
@@ -66,7 +66,7 @@ set(ALL_HEADERS
         ${INC_DIR}/ViewOther.h
         ${INC_DIR}/ViewUser.h
         ${INC_DIR}/ViewEvent.h
-        ${INC_DIR}/ViewFollow.h
+        ${INC_DIR}/ViewEventFollow.h
         ${INC_DIR}/ViewUserFollow.h)
 
 set(TEST_FILES
@@ -74,7 +74,7 @@ set(TEST_FILES
         ${TEST_DIR}/testViewEvent.cpp
         ${TEST_DIR}/testViewReg.cpp
         ${TEST_DIR}/testViewUser.cpp
-        )
+        ${TEST_DIR}/testViewEventFollow.cpp)
 
 find_package(Boost COMPONENTS system filesystem date_time REQUIRED)
 if (Boost_FOUND)

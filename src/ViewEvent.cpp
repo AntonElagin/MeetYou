@@ -24,7 +24,9 @@ http::response<http::string_body> ViewEvent::get() {
         "SELECT id, type, description, date, admin FROM event WHERE name = ?;"));
     eventStmt->setString(1, name);
     std::unique_ptr<sql::ResultSet> event(eventStmt->executeQuery());
+    bool flag = true;
     while (event->next()) {
+      flag = false;
       respBody["event_id"] = event->getInt(1);
       respBody["name"] = name;
       respBody["type"] = event->getString(2);
@@ -32,16 +34,19 @@ http::response<http::string_body> ViewEvent::get() {
       respBody["date"] = event->getString(4);
       respBody["admin"] = event->getString(5);
     }
+    if (flag)
+      return templateReturn(404,"event does not found");
     std::unique_ptr<sql::PreparedStatement> userStmt(conn->prepareStatement(
         "select login ,name, surname, u.id from MeetYou.user u\n"
         "INNER JOIN MeetYou.followers f ON ( f.event_id = ? AND u.id = f.user_id) ;"));
     userStmt->setInt(1, respBody["event_id"]);
     std::unique_ptr<sql::ResultSet> followers(userStmt->executeQuery());
     while (followers->next()) {
-      respBody["followers"] += {{"login",   followers->getString(1)},
-                                {"name",    followers->getString(2)},
-                                {"surname", followers->getString(3)},
-                                {"user_id", followers->getString(4)},};
+        respBody["followers"] += {{"login",   followers->getString(1)},
+                                  {"name",    followers->getString(2)},
+                                  {"surname", followers->getString(3)},
+                                  {"user_id", followers->getString(4)},};
+
     }
     res.result(200);
     std::string body = respBody.dump();
@@ -73,7 +78,7 @@ http::response<http::string_body> ViewEvent::post() {
       validateStmt->setString(1, name);
       std::unique_ptr<sql::ResultSet> result(validateStmt->executeQuery());
       if (result->next())
-        return templateReturn(400, "Name duplication");
+        return templateReturn(400, "Duplicate name");
       // Создание ивента
       std::unique_ptr<sql::PreparedStatement> userStmt(conn->prepareStatement(
           "INSERT  INTO event(name, type, description, date, admin) VALUES (?,?,?,?,?);"));
@@ -162,7 +167,7 @@ int ViewEvent::validate(const std::string &name, const std::string &type, const 
     return 1;
   if (!(type.length() > 5 && type.length() < 50))
     return 2;
-  if (!(description.length() > 0 && description.length() < 200))
+  if (!(description.length() > 5 && description.length() < 200))
     return 3;
   try {
     using namespace boost::gregorian;

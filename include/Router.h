@@ -14,7 +14,7 @@
 #include "ViewRegistration.h"
 #include "ViewUser.h"
 #include "ViewEvent.h"
-#include "ViewFollow.h"
+#include "ViewEventFollow.h"
 #include "ViewUserFollow.h"
 
 namespace http = boost::beast::http;
