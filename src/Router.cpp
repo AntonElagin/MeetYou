@@ -1,8 +1,14 @@
 #include "Router.h"
+#include "CommonChatView.h"
+#include "MessageChatView.h"
+#include "UserChatView.h"
+#include <regex>
 
 Router::Router(http::request<http::string_body> req, const std::string &ip)
     : req(std::move(req)), userId(-1), ip(ip) {
-  authGetMap = {{"/auth", false}, {"/user", false}, {"/event", true}};
+  authGetMap = {{"/auth",  false},
+                {"/user",  false},
+                {"/event", true}};
   driver = get_driver_instance();
   std::shared_ptr<sql::Connection> con(
       driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
@@ -10,7 +16,8 @@ Router::Router(http::request<http::string_body> req, const std::string &ip)
   conn = std::move(con);
 }
 
-std::unique_ptr<View> Router::getView(const std::string& path) {
+std::unique_ptr<View> Router::getView(const std::string &path) {
+  std::regex reg{"/chat/(history|members_list|members_count)"};
   if (path == "/auth" || path == "/")
     return std::unique_ptr<View>(new ViewRegistration(req, conn, userId, ip));
   else if (path == "/user")
@@ -21,8 +28,12 @@ std::unique_ptr<View> Router::getView(const std::string& path) {
     return std::unique_ptr<View>(new ViewUserFollow(req, conn, userId));
   else if (path == "/event/follow")
     return std::unique_ptr<View>(new ViewFollow(req, conn, userId));
-  else if (path == "/other")
-    return std::unique_ptr<View>(new ViewOther(req, conn, userId));
+  else if (path == "/chat/message")
+    return std::unique_ptr<View>(new ViewMessageChat(req, conn, userId));
+  else if (path == "/chat/user")
+    return std::unique_ptr<View>(new ViewUserChat(req, conn, userId));
+  else if (std::regex_search(path, reg))
+    return std::unique_ptr<View>(new ViewChatCommon(req, conn, userId));
   else
     return std::unique_ptr<View>(new ViewOther(req, conn, userId));
 }

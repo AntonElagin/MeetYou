@@ -6,10 +6,10 @@
 
 using json=nlohmann::json;
 
-class Message_chat_view : public View {
+class ViewMessageChat : public View {
 public:
-    Message_chat_view(http::request<http::string_body> _req,
-                      std::shared_ptr<sql::Connection> _conn, int userId) : View(_req, _conn, userId) {}
+    ViewMessageChat(http::request<http::string_body> _req,
+                    std::shared_ptr<sql::Connection> _conn, int userId) : View(_req, _conn, userId) {}
 
     http::response<http::string_body> get() override {
         json j = json::parse(req.body());

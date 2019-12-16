@@ -5,10 +5,9 @@
 #include <nlohmann/json.hpp>
 #include <Md5.h>
 #include "ViewUser.h"
-#include "ViewRegistration.h"
 
 
-class ViewRegTest : public testing::Test {
+class ViewUserTest : public testing::Test {
 protected:
   void SetUp() override {
     req.version(11);
@@ -20,170 +19,298 @@ protected:
         driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
     con = conn;
     con->setSchema("MeetYou");
-    std::unique_ptr<sql::PreparedStatement> Stmt1(con->prepareStatement("Delete From user Where login = \"Cheburashka\""));
-    Stmt1->executeQuery();
-    std::unique_ptr<sql::PreparedStatement> Stmt2(con->prepareStatement("Delete From user Where email = \"email@email.ru\""));
-    Stmt2->executeQuery();
-    std::unique_ptr<sql::PreparedStatement> Stmt(con->prepareStatement("Insert into user(login, password, email) Values (\"login12\", ?, \"email@email.ru\")"));
-    Stmt->setString(1, md5("qwerty1234"));
-    Stmt->executeQuery();
+
+    //
+    std::unique_ptr<sql::PreparedStatement> del(
+        con->prepareStatement("Delete From user Where login = \"testlogin1321\""));
+    del->executeQuery();
+//
+    try {
+      std::unique_ptr<sql::PreparedStatement> Stmt(con->prepareStatement(
+          "Insert into user(login, password, email, name, surname, sex, birthday, location) Values (?, ?, ?, ?, ?, ?, ?, ?);"));
+      Stmt->setString(1, "testlogin1321");
+      Stmt->setString(2, md5("password123"));
+      Stmt->setString(3, "email@kek.ru");
+      Stmt->setString(4, "namename");
+      Stmt->setString(5, "surname");
+      Stmt->setString(6, "male");
+      Stmt->setDateTime(7, "1999-01-12");
+      Stmt->setString(8, "qwertyu");
+      Stmt->execute();
+    } catch (sql::SQLException &e) {
+      auto str = e.what();
+      std::cout << e.what();
+
+    }
+    std::unique_ptr<sql::PreparedStatement> stmt(con->prepareStatement(
+        "Select id from user where login = ?"));
+    stmt->setString(1, "testlogin1321");
+    std::unique_ptr<sql::ResultSet> result(stmt->executeQuery());
+    if (result->next())
+      userId = result->getInt(1);
 
 
   }
 
   void TearDown() override {
-    std::unique_ptr<sql::PreparedStatement> Stmt(con->prepareStatement("Delete From user Where login = \"Cheburashka\""));
-    std::unique_ptr<sql::PreparedStatement> Stmt2(con->prepareStatement("Delete From user Where login = \"login12\""));
+    std::unique_ptr<sql::PreparedStatement> Stmt(
+        con->prepareStatement("Delete From user Where login = \"testlogin\""));
     Stmt->executeQuery();
-    Stmt2->executeQuery();
   }
 
   sql::Driver *driver{};
   std::shared_ptr<sql::Connection> con;
   http::request<http::string_body> req;
+  int userId;
 };
 
-TEST_F(ViewRegTest, post) {
+TEST_F(ViewUserTest, goodPost) {
   nlohmann::json body;
-  body["login"] = "Cheburashka";
-  body["password"] = "Henna02";
-  body["email"] = "hepoklak@zlo.me";
+  body["name"] = "qwerty1202";
+  body["surname"] = "asdfgt";
+  body["sex"] = "male";
+  body["birthday"] = "1999-12-12";
+  body["location"] = "kek check1";
   std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewRegistration view(req, con, -1, "8.128.10.1");
+  ViewUser view(req, con, userId);
   std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "OK");
 }
 
-TEST_F(ViewRegTest, badRegisterationJSON) {
+TEST_F(ViewUserTest, goodGet1) {
   nlohmann::json body;
-  std::string str = "{ \"ds\": 34";
+  body["user_id"] = userId;
+  std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewRegistration view(req, con, -1, "8.128.10.1");
-  std::string respBody = view.post().body();
+  ViewUser view(req, con, userId);
+  std::string respBody = view.get().body();
   body = nlohmann::json::parse(respBody);
-  ASSERT_EQ(body["message"], "JSON error");
+  ASSERT_EQ(body["name"], "namename");
 }
 
-
-TEST_F(ViewRegTest, badLoginJSON) {
+TEST_F(ViewUserTest, goodGet2) {
   nlohmann::json body;
-  std::string str = "{ \"ds\": 34";
+  body["login"] = "testlogin1321";
+  std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewRegistration view(req, con, -1, "8.128.10.1");
+  ViewUser view(req, con, userId);
+  std::string respBody = view.get().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["name"], "namename");
+}
+
+TEST_F(ViewUserTest, badGet1) {
+  nlohmann::json body;
+  body["qwerty"] = "testlogin1321";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewUser view(req, con, userId);
   std::string respBody = view.get().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["status"], 400);
 }
 
-TEST_F(ViewRegTest, badLogin) {
+TEST_F(ViewUserTest, badGetJSON) {
   nlohmann::json body;
-  body["email"] = "login12";
-  body["password"] = "qwerty1234";
-  std::string str = body.dump();
+  std::string str = "{\"ds\" : 12";
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewRegistration view(req, con, -1, "8.128.10.1");
+  ViewUser view(req, con, userId);
   std::string respBody = view.get().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["status"], 400);
 }
 
-TEST_F(ViewRegTest, Login) {
+TEST_F(ViewUserTest, badPostJSON) {
   nlohmann::json body;
-  body["login"] = "login12";
-  body["password"] = "qwerty1234";
-  std::string str = body.dump();
+  std::string str = "{\"ds\" : 12";
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewRegistration view(req, con, -1, "8.128.10.1");
-  std::string respBody = view.get().body();
-  body = nlohmann::json::parse(respBody);
-  ASSERT_EQ(body["status"], 200);
-}
-
-TEST_F(ViewRegTest, badParamReg) {
-  nlohmann::json body;
-  body["logi"] = "Cheburashka";
-  body["password"] = "Henna02";
-  body["email"] = "hepoklak@zlo.me";
-  std::string str = body.dump();
-  req.body() = str;
-  req.set(http::field::content_length, str.length());
-  ViewRegistration view(req, con, -1, "8.128.10.1");
+  ViewUser view(req, con, userId);
   std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["status"], 400);
 }
 
-TEST_F(ViewRegTest, badParamsReg) {
+TEST_F(ViewUserTest, badPost_1) {
   nlohmann::json body;
-  body["login"] = "Cheburashka";
-  body["passwor"] = "Henna02";
-  body["email"] = "hepoklak@zlo.me";
+  body["nam"] = "qwerty1202";
+  body["surname"] = "asdfgt";
+  body["sex"] = "male";
+  body["birthday"] = "1999-12-12";
+  body["location"] = "kek check";
   std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewRegistration view(req, con, -1, "8.128.10.1");
+  ViewUser view(req, con, userId);
   std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
-  ASSERT_EQ(body["status"], 400);
-}
-TEST_F(ViewRegTest, badParamsReg2) {
-  nlohmann::json body;
-  body["login"] = "Cheburashka";
-  body["password"] = "Henna02";
-  body["emai"] = "hepoklak@zlo.me";
-  std::string str = body.dump();
-  req.body() = str;
-  req.set(http::field::content_length, str.length());
-  ViewRegistration view(req, con, -1, "8.128.10.1");
-  std::string respBody = view.post().body();
-  body = nlohmann::json::parse(respBody);
-  ASSERT_EQ(body["status"], 400);
+  ASSERT_EQ(body["message"], "Invalid params or params count");
 }
 
-TEST_F(ViewRegTest, badEmailRegisteration) {
+
+TEST_F(ViewUserTest, badPost_2) {
   nlohmann::json body;
-  body["login"] = "Cheburashka";
-  body["password"] = "Henna02";
-  body["email"] = "hepoklak@zlo";
+  body["name"] = "qwerty1202";
+  body["surnam"] = "asdfgt";
+  body["sex"] = "male";
+  body["birthday"] = "1999-12-12";
+  body["location"] = "kek check";
   std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewRegistration view(req,  con, -1 ,"8.128.10.1");
+  ViewUser view(req, con, userId);
   std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
-  ASSERT_EQ(body["status"], 400);
+  ASSERT_EQ(body["message"], "Invalid params or params count");
 }
 
-TEST_F(ViewRegTest, badLoginRegisteration) {
+TEST_F(ViewUserTest, badPost_3) {
   nlohmann::json body;
-  body["login"] = "Ch";
-  body["password"] = "Henna02";
-  body["email"] = "hepoklak@zlo.me";
+  body["name"] = "qwerty1202";
+  body["surname"] = "asdfgt";
+  body["sex11"] = "male";
+  body["birthday"] = "1999-12-12";
+  body["location"] = "kek check";
   std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewRegistration view(req, con, -1, "8.128.10.1");
+  ViewUser view(req, con, userId);
   std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
-  ASSERT_EQ(body["message"], "Invalid login");
+  ASSERT_EQ(body["message"], "Invalid params or params count");
 }
-TEST_F(ViewRegTest, badPasswordRegisteration) {
+
+TEST_F(ViewUserTest, badPost_4) {
   nlohmann::json body;
-  body["login"] = "Cheburashka";
-  body["password"] = "He";
-  body["email"] = "hepoklak@zlo.me";
+  body["name"] = "qwerty1202";
+  body["surname"] = "asdfgt";
+  body["sex"] = "male";
+  body["birthday34"] = "1999-12-12";
+  body["location"] = "kek check";
   std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewRegistration view(req, con, -1, "8.128.10.1");
+  ViewUser view(req, con, userId);
   std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
-  ASSERT_EQ(body["message"], "Invalid password");
+  ASSERT_EQ(body["message"], "Invalid params or params count");
+}
+
+TEST_F(ViewUserTest, badPost_5) {
+  nlohmann::json body;
+  body["name"] = "qwerty1202";
+  body["surname"] = "asdfgt";
+  body["sex"] = "male";
+  body["birthday"] = "1999-12-12";
+  body["locationqwe"] = "kek check";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewUser view(req, con, userId);
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Invalid params or params count");
+}
+
+TEST_F(ViewUserTest, badPost_name) {
+  nlohmann::json body;
+  body["name"] = "q";
+  body["surname"] = "asdfgt";
+  body["sex"] = "male";
+  body["birthday"] = "1999-12-12";
+  body["location"] = "kek check";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewUser view(req, con, userId);
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Invalid name");
+}
+
+TEST_F(ViewUserTest, badPost_surname) {
+  nlohmann::json body;
+  body["name"] = "qsdas";
+  body["surname"] = "a";
+  body["sex"] = "male";
+  body["birthday"] = "1999-12-12";
+  body["location"] = "kek check";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewUser view(req, con, userId);
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Invalid surname");
+}
+
+TEST_F(ViewUserTest, badPost_sex) {
+  nlohmann::json body;
+  body["name"] = "qsdas";
+  body["surname"] = "adsdssd";
+  body["sex"] = "maled";
+  body["birthday"] = "1999-12-12";
+  body["location"] = "kek check";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewUser view(req, con, userId);
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Invalid sex");
+}
+
+TEST_F(ViewUserTest, badPost_birthday) {
+  nlohmann::json body;
+  body["name"] = "qsdas";
+  body["surname"] = "adfdsd";
+  body["sex"] = "male";
+  body["birthday"] = "2019-12-12";
+  body["location"] = "kek check";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewUser view(req, con, userId);
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Invalid birthday");
+}
+
+TEST_F(ViewUserTest, badPost_birthday2) {
+  nlohmann::json body;
+  body["name"] = "qsdas";
+  body["surname"] = "adfdsd";
+  body["sex"] = "male";
+  body["birthday"] = "year_month_day";
+  body["location"] = "kek check";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewUser view(req, con, userId);
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Invalid birthday");
+}
+
+TEST_F(ViewUserTest, badPost_location) {
+  nlohmann::json body;
+  body["name"] = "qsdas";
+  body["surname"] = "adsdssd";
+  body["sex"] = "male";
+  body["birthday"] = "1999-12-12";
+  body["location"] = "ke";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewUser view(req, con, userId);
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Invalid location");
 }
