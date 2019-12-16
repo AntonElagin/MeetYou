@@ -127,11 +127,12 @@ http::response<http::string_body> ViewEvent::put() {
       name = js["name"];
     else
       event_id = js["event_id"];
+
     std::string type = js["type"],
         description = js["description"],
         date = js["date"];
 
-    int validCode = validate("name123", type, description, date);
+    int validCode = validate((name.length()!=0)?name:"username2", type, description, date);
     if (!validCode) {
       std::unique_ptr<sql::PreparedStatement> userStmt(conn->prepareStatement(
           "UPDATE event SET type = ?, description = ?, date = ? WHERE id = ? OR name = ? and admin = ?;"));
@@ -155,7 +156,6 @@ http::response<http::string_body> ViewEvent::put() {
       case 4:
         return templateReturn(400, "Invalid date");
     }
-    return templateReturn(400, "Invalid some data");
   }
   return templateReturn(400, "Invalid params or params count");
 }

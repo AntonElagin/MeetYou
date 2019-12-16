@@ -58,7 +58,12 @@ http::response<http::string_body> ViewUserFollow::post() {
 }
 
 http::response<http::string_body> ViewUserFollow::delete_() {
-  nlohmann::json js = nlohmann::json::parse(req.body());
+  nlohmann::json js;
+  try {
+    js = nlohmann::json::parse(req.body());
+  } catch (nlohmann::json::parse_error &e) {
+    return templateReturn(400, "JSON error");
+  }
   if (js.contains("idol_id")) {
     if (js["idol_id"].is_number_unsigned()) {
       std::unique_ptr<sql::PreparedStatement> followStmt(conn->prepareStatement(

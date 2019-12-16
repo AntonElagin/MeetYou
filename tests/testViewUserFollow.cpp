@@ -4,10 +4,10 @@
 #include <boost/asio.hpp>
 #include <nlohmann/json.hpp>
 #include <Md5.h>
-#include "ViewEventFollow.h"
+#include "ViewUserFollow.h"
 
 
-class ViewEventFollowTest : public testing::Test {
+class ViewUserFollowTest : public testing::Test {
 protected:
   void SetUp() override {
     req.version(11);
@@ -78,102 +78,102 @@ protected:
   std::string name;
 };
 
-TEST_F(ViewEventFollowTest, goodPost) {
+TEST_F(ViewUserFollowTest, goodPost) {
   nlohmann::json body;
-  body["event_id"] = eventId;
+  body["idol_id"] = eventId;
   std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewEventFollow view(req, con, userId);
+  ViewUserFollow view(req, con, userId);
   view.post();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewEventFollow view2(req, con, userId);
+  ViewUserFollow view2(req, con, userId);
   std::string respBody = view2.post().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["status"], 200);
 }
 
-TEST_F(ViewEventFollowTest, badPost) {
+TEST_F(ViewUserFollowTest, badPost) {
   nlohmann::json body;
-  body["event_i"] = eventId;
+  body["idol_i"] = eventId;
   std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewEventFollow view(req, con, userId);
+  ViewUserFollow view(req, con, userId);
   std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "Invalid data");
 }
 
-TEST_F(ViewEventFollowTest, badPost2) {
+TEST_F(ViewUserFollowTest, badPost2) {
   nlohmann::json body;
-  body["event_id"] = "dasd";
+  body["idol_id"] = "dasd";
   std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewEventFollow view(req, con, userId);
+  ViewUserFollow view(req, con, userId);
   std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "Invalid event_id");
 }
 
 
-TEST_F(ViewEventFollowTest, badPostJSON) {
+TEST_F(ViewUserFollowTest, badPostJSON) {
   nlohmann::json body;
-  body["event_i"] = eventId;
+  body["idol_i"] = eventId;
   std::string str = R"({"sd" :: "df"})";
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewEventFollow view(req, con, userId);
+  ViewUserFollow view(req, con, userId);
   std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "JSON error");
 }
 
-TEST_F(ViewEventFollowTest, badDeleteJSON) {
+TEST_F(ViewUserFollowTest, badDeleteJSON) {
   nlohmann::json body;
-  body["event_i"] = eventId;
+  body["idol_i"] = eventId;
   std::string str = R"({"sd" :: "df"})";
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewEventFollow view(req, con, userId);
+  ViewUserFollow view(req, con, userId);
   std::string respBody = view.delete_().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "JSON error");
 }
 
-TEST_F(ViewEventFollowTest, goodDelte) {
+TEST_F(ViewUserFollowTest, goodDelte) {
   nlohmann::json body;
-  body["event_id"] = eventId;
+  body["idol_id"] = eventId;
   std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewEventFollow view(req, con, userId);
+  ViewUserFollow view(req, con, userId);
   std::string respBody = view.delete_().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["status"], 200);
 }
 
-TEST_F(ViewEventFollowTest, badDelete) {
+TEST_F(ViewUserFollowTest, badDelete) {
   nlohmann::json body;
-  body["event_i"] = eventId;
+  body["idol_i"] = eventId;
   std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewEventFollow view(req, con, userId);
+  ViewUserFollow view(req, con, userId);
   std::string respBody = view.delete_().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "Invalid data");
 }
 
-TEST_F(ViewEventFollowTest, badDelete2) {
+TEST_F(ViewUserFollowTest, badDelete2) {
   nlohmann::json body;
-  body["event_id"] = "dasd";
+  body["idol_id"] = "dasd";
   std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewEventFollow view(req, con, userId);
+  ViewUserFollow view(req, con, userId);
   std::string respBody = view.delete_().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "Invalid event_id");

@@ -74,7 +74,7 @@ set(TEST_FILES
         ${TEST_DIR}/testViewEvent.cpp
         ${TEST_DIR}/testViewReg.cpp
         ${TEST_DIR}/testViewUser.cpp
-        ${TEST_DIR}/testViewEventFollow.cpp)
+        ${TEST_DIR}/testViewEventFollow.cpp tests/testViewUserFollow.cpp)
 
 find_package(Boost COMPONENTS system filesystem date_time REQUIRED)
 if (Boost_FOUND)
