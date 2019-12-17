@@ -2,7 +2,6 @@
 #include <cppconn/prepared_statement.h>
 #include <cppconn/resultset.h>
 
-
 http::response<http::string_body> ViewUserHobby::get() {
   http::response<http::string_body> res;
   res.set(http::field::content_type, "json/application");
@@ -29,7 +28,7 @@ http::response<http::string_body> ViewUserHobby::get() {
     resBody["hobbies"] += hobbyRes->getString(1);
   }
   if (!resBody.contains("hobbies"))
-    resBody["hobbies"] = nullptr;
+    resBody["hobbies"] = std::vector<std::string>(0);
   resBody["user_id"] = user;
   std::string body = resBody.dump();
   res.result(200);
@@ -53,12 +52,15 @@ http::response<http::string_body> ViewUserHobby::post() {
   } catch (...) {
     return templateReturn(400, "Invalid JSON");
   }
+  bool a = reqBody.contains("hobby");
+  bool b = reqBody["hobby"].is_array();
+  bool c = reqBody["hobby"].is_string();
 
   if (!(reqBody.contains("hobby") && (reqBody["hobby"].is_array() || reqBody["hobby"].is_string())))
     return templateReturn(400, "Invalid params or params count");
-//  return workTemplate(reqBody, "INSERT into userhobby(user_id,hobby) Values(?,?));");
+
   std::unique_ptr<sql::PreparedStatement> hobbyStmt(
-      conn->prepareStatement("INSERT into userhobby(user_id,hobby) Values(?,?));"));
+      conn->prepareStatement("INSERT into userhobby(user_id, hobby) Values(?,?);"));
   std::unique_ptr<sql::PreparedStatement> validateStmt(
       conn->prepareStatement("Select * from userhobby where user_id = ? and hobby = ?;"));
   if (reqBody["hobby"].is_string()) {
@@ -82,9 +84,9 @@ http::response<http::string_body> ViewUserHobby::post() {
         hobbyStmt->setInt(1, userId);
         hobbyStmt->executeQuery();
       }
-      return templateReturn(200, "OK");
     }
   }
+  return templateReturn(200, "OK");
 }
 
 http::response<http::string_body> ViewUserHobby::delete_() {
@@ -116,8 +118,8 @@ http::response<http::string_body> ViewUserHobby::delete_() {
       hobbyStmt->setInt(1, userId);
       hobbyStmt->executeQuery();
     }
-    return templateReturn(200, "OK");
   }
+  return templateReturn(200, "OK");
 }
 
 
@@ -125,9 +127,12 @@ http::response<http::string_body> ViewUserHobby::put() {
   return defaultPlug();
 }
 
-http::response<http::string_body> ViewUserHobby::workTemplate(const nlohmann::json &json, const std::string &sql) {
+ViewUserHobby::ViewUserHobby(const http::request<http::string_body> &_req,
+                             const std::shared_ptr<sql::Connection> &_conn,
+                             int _userId) : View(_req, _conn, _userId) {
 
 }
+
 
 
 

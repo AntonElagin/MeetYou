@@ -18,10 +18,14 @@ Router::Router(http::request<http::string_body> req, const std::string &ip)
 
 std::unique_ptr<View> Router::getView(const std::string &path) {
   std::regex reg{"/chat/(history|members_list|members_count)"};
-  if (path == "/auth" || path == "/")
+  if (path == "/auth")
     return std::unique_ptr<View>(new ViewRegistration(req, conn, userId, ip));
   else if (path == "/user")
     return std::unique_ptr<View>(new ViewUser(req, conn, userId));
+  else if (path == "/event/hobby")
+    return std::unique_ptr<View>(new ViewEventHobby(req, conn, userId));
+  else if (path == "/user/hobby")
+    return std::unique_ptr<View>(new ViewUserHobby(req, conn, userId));
   else if (path == "/event")
     return std::unique_ptr<View>(new ViewEvent(req, conn, userId));
   else if (path == "/user/follow")

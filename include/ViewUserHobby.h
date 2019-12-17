@@ -1,7 +1,3 @@
-//
-// Created by anton on 17.12.2019.
-//
-
 #ifndef TECHPROJECT_VIEWUSERHOBBY_H
 #define TECHPROJECT_VIEWUSERHOBBY_H
 
@@ -9,10 +5,9 @@
 
 class ViewUserHobby : public View {
   bool isHobby(const std::string &value);
-
-  http::response<http::string_body> workTemplate(const nlohmann::json &json, const std::string &sql);
-
 public:
+  ViewUserHobby(const http::request<http::string_body> &_req, const std::shared_ptr<sql::Connection> &_conn,
+                int _userId);
 //  Лист всех хобби юзера
 //    Params : user_id
   http::response<http::string_body> get() override;
