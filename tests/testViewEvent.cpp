@@ -25,7 +25,6 @@ class ViewEventTest : public testing::Test {
     del->executeQuery();
     std::unique_ptr<sql::PreparedStatement> del2(
         con->prepareStatement("Delete From event Where name = \"event_name\""));
-    del->executeQuery();
     del2->executeQuery();
     //
     //

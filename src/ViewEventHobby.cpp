@@ -53,9 +53,9 @@ http::response<http::string_body> ViewEventHobby::post() {
     return templateReturn(400, "Invalid JSON");
   }
 
-  if (!(reqBody.contains("hobby") &&
-        (reqBody["hobby"].is_array() || reqBody["hobby"].is_string())) &&
-      reqBody.contains("event_id") && reqBody["event_id"].is_number_unsigned())
+  if (!((reqBody.contains("hobby") &&
+         reqBody.contains("event_id") && reqBody["event_id"].is_number_unsigned()) &&
+        ((reqBody["hobby"].is_array() || reqBody["hobby"].is_string()))))
     return templateReturn(400, "Invalid params or params count");
 
   int event = reqBody["event_id"];

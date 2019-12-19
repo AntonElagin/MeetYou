@@ -16,9 +16,8 @@ bool ViewRegistration::isLogin(const std::string &value) {
 }
 
 bool ViewRegistration::isEmail(const std::string &value) {
-  //  TODO : Проверить регулярку(Возможно отрабатывает не все email)
   std::regex reg{
-      R"(^([A-Za-z0-9_-]+\.)*[a-z0-9_-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}$)"};
+      R"(^([A-Za-z0-9_-]+\.)*[A-Za-z0-9_-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}$)"};
   return (value.size() > 6) && (value.size() < 45) &&
          std::regex_search(value, reg);
 }

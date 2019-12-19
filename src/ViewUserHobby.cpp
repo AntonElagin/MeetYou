@@ -56,7 +56,7 @@ http::response<http::string_body> ViewUserHobby::post() {
   bool b = reqBody["hobby"].is_array();
   bool c = reqBody["hobby"].is_string();
 
-  if (!(reqBody.contains("hobby") &&
+  if (!((reqBody.contains("hobby")) &&
         (reqBody["hobby"].is_array() || reqBody["hobby"].is_string())))
     return templateReturn(400, "Invalid params or params count");
 

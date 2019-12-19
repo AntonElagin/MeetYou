@@ -101,7 +101,6 @@ http::response<http::string_body> ViewEvent::post() {
               "Insert Into followers(user_id,event_id) values (?, ?);"));
       followerStmt->setInt(1, userId);
       followerStmt->setInt(2, eventId);
-      followerStmt->execute();
       if (followerStmt->execute()) throw "server error";
 
       return templateReturn(200, "OK");
