@@ -10,14 +10,15 @@
 #include <utility>
 #include "AuthMiddleware.h"
 #include "View.h"
+#include "ViewEvent.h"
+#include "ViewEventFollow.h"
+#include "ViewEventHobby.h"
+#include "ViewFindEvent.h"
 #include "ViewOther.h"
 #include "ViewRegistration.h"
 #include "ViewUser.h"
-#include "ViewEvent.h"
-#include "ViewEventFollow.h"
 #include "ViewUserFollow.h"
 #include "ViewUserHobby.h"
-#include "ViewEventHobby.h"
 
 namespace http = boost::beast::http;
 
@@ -36,14 +37,14 @@ class Router {
 
   http::response<http::string_body> methodException();
 
-public:
-  template<class Send>
+ public:
+  template <class Send>
   void startRouting(Send &&send);
 
   explicit Router(http::request<http::string_body> req, const std::string &ip);
 };
 
-template<class Send>
+template <class Send>
 void Router::startRouting(Send &&send) {
   try {
     std::regex reg{"/[^?]*"};

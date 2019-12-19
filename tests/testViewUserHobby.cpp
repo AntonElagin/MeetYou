@@ -1,12 +1,11 @@
-#include "ViewUserHobby.h"
+#include <Md5.h>
 #include <cppconn/driver.h>
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
-#include <Md5.h>
-
+#include "ViewUserHobby.h"
 
 class ViewUserHobbyTest : public testing::Test {
-protected:
+ protected:
   void SetUp() override {
     req.version(11);
     req.set(http::field::user_agent, "test");
@@ -16,11 +15,11 @@ protected:
     std::shared_ptr<sql::Connection> conn(
         driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
     con = conn;
-    con->setSchema("MeetYou");
+    con->setSchema("MeetYouTest");
 
     //
-    std::unique_ptr<sql::PreparedStatement> del(
-        con->prepareStatement("Delete From user Where login = \"testlogin1321\""));
+    std::unique_ptr<sql::PreparedStatement> del(con->prepareStatement(
+        "Delete From user Where login = \"testlogin1321\""));
     del->executeQuery();
 
     std::unique_ptr<sql::PreparedStatement> Stmt(con->prepareStatement(
@@ -30,25 +29,22 @@ protected:
     Stmt->setString(3, "email@kek.ru");
     Stmt->execute();
 
-
-    std::unique_ptr<sql::PreparedStatement> stmt(con->prepareStatement(
-        "Select id from user where login = ?"));
+    std::unique_ptr<sql::PreparedStatement> stmt(
+        con->prepareStatement("Select id from user where login = ?"));
     stmt->setString(1, "testlogin1321");
     std::unique_ptr<sql::ResultSet> result(stmt->executeQuery());
-    if (result->next())
-      userId = result->getInt(1);
+    if (result->next()) userId = result->getInt(1);
 
     std::unique_ptr<sql::PreparedStatement> hobby(con->prepareStatement(
         "Insert into userhobby(user_id, hobby) Values ( ?, ?);"));
     hobby->setInt(1, userId);
     hobby->setString(2, "myhobby");
     hobby->execute();
-
   }
 
   void TearDown() override {
-    std::unique_ptr<sql::PreparedStatement> Stmt(
-        con->prepareStatement("Delete From user Where login = \"testlogin1321\""));
+    std::unique_ptr<sql::PreparedStatement> Stmt(con->prepareStatement(
+        "Delete From user Where login = \"testlogin1321\""));
     Stmt->executeQuery();
     std::unique_ptr<sql::PreparedStatement> Stmt1(
         con->prepareStatement("Delete From userhobby Where user_id = ?"));
@@ -59,7 +55,7 @@ protected:
   sql::Driver *driver{};
   std::shared_ptr<sql::Connection> con;
   http::request<http::string_body> req;
-  int userId;//, eventId;
+  int userId;  //, eventId;
   std::string name;
 };
 
@@ -70,7 +66,7 @@ TEST_F(ViewUserHobbyTest, goodGet) {
   req.body() = str;
   req.set(http::field::content_length, str.length());
   ViewUserHobby view(req, con, userId);
-  std::string respBody =  view.get().body();
+  std::string respBody = view.get().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["hobbies"][0], "myhobby");
 }
@@ -82,7 +78,7 @@ TEST_F(ViewUserHobbyTest, goodGet2) {
   req.body() = str;
   req.set(http::field::content_length, str.length());
   ViewUserHobby view(req, con, userId);
-  std::string respBody =  view.get().body();
+  std::string respBody = view.get().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "Invalid params or params count");
 }
@@ -94,7 +90,7 @@ TEST_F(ViewUserHobbyTest, badGet1) {
   req.body() = str;
   req.set(http::field::content_length, str.length());
   ViewUserHobby view(req, con, userId);
-  std::string respBody =  view.get().body();
+  std::string respBody = view.get().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_TRUE(body["hobbies"].size() == 0);
 }
@@ -105,7 +101,7 @@ TEST_F(ViewUserHobbyTest, badGetJSON) {
   req.body() = str;
   req.set(http::field::content_length, str.length());
   ViewUserHobby view(req, con, userId);
-  std::string respBody =  view.get().body();
+  std::string respBody = view.get().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["status"], 400);
 }
@@ -117,7 +113,7 @@ TEST_F(ViewUserHobbyTest, goodPost1) {
   req.body() = str;
   req.set(http::field::content_length, str.length());
   ViewUserHobby view(req, con, userId);
-  std::string respBody =  view.post().body();
+  std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["status"], 200);
 }
@@ -129,7 +125,7 @@ TEST_F(ViewUserHobbyTest, badPost2) {
   req.body() = str;
   req.set(http::field::content_length, str.length());
   ViewUserHobby view(req, con, userId);
-  std::string respBody =  view.post().body();
+  std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "Invalid params or params count");
 }
@@ -141,7 +137,7 @@ TEST_F(ViewUserHobbyTest, goodPost4) {
   req.body() = str;
   req.set(http::field::content_length, str.length());
   ViewUserHobby view(req, con, userId);
-  std::string respBody =  view.post().body();
+  std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["status"], 200);
 }
@@ -156,7 +152,7 @@ TEST_F(ViewUserHobbyTest, goodPost3) {
   req.body() = str;
   req.set(http::field::content_length, str.length());
   ViewUserHobby view(req, con, userId);
-  std::string respBody =  view.post().body();
+  std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["status"], 200);
 }
@@ -168,7 +164,7 @@ TEST_F(ViewUserHobbyTest, badPost) {
   req.body() = str;
   req.set(http::field::content_length, str.length());
   ViewUserHobby view(req, con, userId);
-  std::string respBody =  view.post().body();
+  std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "Invalid params or params count");
 }
@@ -179,7 +175,7 @@ TEST_F(ViewUserHobbyTest, badPostJSON) {
   req.body() = str;
   req.set(http::field::content_length, str.length());
   ViewUserHobby view(req, con, userId);
-  std::string respBody =  view.post().body();
+  std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["status"], 400);
 }
@@ -191,7 +187,7 @@ TEST_F(ViewUserHobbyTest, badDelete1) {
   req.body() = str;
   req.set(http::field::content_length, str.length());
   ViewUserHobby view(req, con, userId);
-  std::string respBody =  view.delete_().body();
+  std::string respBody = view.delete_().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "Invalid params or params count");
 }
@@ -203,7 +199,7 @@ TEST_F(ViewUserHobbyTest, badDelete2) {
   req.body() = str;
   req.set(http::field::content_length, str.length());
   ViewUserHobby view(req, con, userId);
-  std::string respBody =  view.delete_().body();
+  std::string respBody = view.delete_().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "OK");
 }
@@ -215,7 +211,7 @@ TEST_F(ViewUserHobbyTest, goodDelete) {
   req.body() = str;
   req.set(http::field::content_length, str.length());
   ViewUserHobby view(req, con, userId);
-  std::string respBody =  view.delete_().body();
+  std::string respBody = view.delete_().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "OK");
 }
@@ -230,11 +226,10 @@ TEST_F(ViewUserHobbyTest, goodDelete2) {
   req.body() = str;
   req.set(http::field::content_length, str.length());
   ViewUserHobby view(req, con, userId);
-  std::string respBody =  view.delete_().body();
+  std::string respBody = view.delete_().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "OK");
 }
-
 
 TEST_F(ViewUserHobbyTest, badDeleteJSON) {
   nlohmann::json body;
@@ -242,7 +237,7 @@ TEST_F(ViewUserHobbyTest, badDeleteJSON) {
   req.body() = str;
   req.set(http::field::content_length, str.length());
   ViewUserHobby view(req, con, userId);
-  std::string respBody =  view.delete_().body();
+  std::string respBody = view.delete_().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "Invalid JSON");
 }

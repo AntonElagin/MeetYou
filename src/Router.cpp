@@ -1,14 +1,12 @@
 #include "Router.h"
+#include <regex>
 #include "CommonChatView.h"
 #include "MessageChatView.h"
 #include "UserChatView.h"
-#include <regex>
 
 Router::Router(http::request<http::string_body> req, const std::string &ip)
     : req(std::move(req)), userId(-1), ip(ip) {
-  authGetMap = {{"/auth",  false},
-                {"/user",  false},
-                {"/event", true}};
+  authGetMap = {{"/auth", false}, {"/user", false}, {"/event", true}};
   driver = get_driver_instance();
   std::shared_ptr<sql::Connection> con(
       driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
@@ -34,6 +32,8 @@ std::unique_ptr<View> Router::getView(const std::string &path) {
     return std::unique_ptr<View>(new ViewEventFollow(req, conn, userId));
   else if (path == "/chat/message")
     return std::unique_ptr<View>(new ViewMessageChat(req, conn, userId));
+  else if (path == "/event/find")
+    return std::unique_ptr<View>(new ViewFindEvent(req, conn, userId));
   else if (path == "/chat/user")
     return std::unique_ptr<View>(new ViewUserChat(req, conn, userId));
   else if (std::regex_search(path, reg))

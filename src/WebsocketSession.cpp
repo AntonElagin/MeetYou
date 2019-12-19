@@ -4,7 +4,6 @@
 WebsocketSession::WebsocketSession(tcp::socket &&socket)
     : ws_(std::move(socket)) {}
 
-
 void WebsocketSession::onAccept(beast::error_code ec) {
   if (ec) return fail(ec, "accept");
 

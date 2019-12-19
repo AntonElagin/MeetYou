@@ -16,7 +16,7 @@ bool ViewRegistration::isLogin(const std::string &value) {
 }
 
 bool ViewRegistration::isEmail(const std::string &value) {
-//  TODO : Проверить регулярку(Возможно отрабатывает не все email)
+  //  TODO : Проверить регулярку(Возможно отрабатывает не все email)
   std::regex reg{
       R"(^([A-Za-z0-9_-]+\.)*[a-z0-9_-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}$)"};
   return (value.size() > 6) && (value.size() < 45) &&
@@ -46,50 +46,51 @@ http::response<http::string_body> ViewRegistration::post() {
     log = js.at("login");
     eml = js.at("email");
     if (isPassword(pas) && isEmail(eml) && isLogin(log)) {
-        switch (isDuplicate(log, eml)) {
-          case 1:
-            return templateReturn(400, "Duplicate login");
-          case 2:
-            return templateReturn(400, "Duplicate email");
-          case 3:
-            return templateReturn(400, "Duplicate login and email");
-          case 0:
+      switch (isDuplicate(log, eml)) {
+        case 1:
+          return templateReturn(400, "Duplicate login");
+        case 2:
+          return templateReturn(400, "Duplicate email");
+        case 3:
+          return templateReturn(400, "Duplicate login and email");
+        case 0:
 
-            // Создание пользователя
-            std::unique_ptr<sql::PreparedStatement> userStmt(conn->prepareStatement(
-                "INSERT  INTO user(email, login, password) VALUES (?,?,?);"));
-            userStmt->setString(3, md5(pas));
-            userStmt->setString(2, log);
-            userStmt->setString(1, eml);
-            if (userStmt->execute()) throw "server error";
+          // Создание пользователя
+          std::unique_ptr<sql::PreparedStatement> userStmt(
+              conn->prepareStatement(
+                  "INSERT  INTO user(email, login, password) VALUES (?,?,?);"));
+          userStmt->setString(3, md5(pas));
+          userStmt->setString(2, log);
+          userStmt->setString(1, eml);
+          if (userStmt->execute()) throw "server error";
 
-            //      Получаем  Id нового пользователя
-            std::unique_ptr<sql::PreparedStatement> userIdStmt(
-                conn->prepareStatement("Select id From user where login = ?;"));
-            userIdStmt->setString(1, log);
-            std::unique_ptr<sql::ResultSet> user(userIdStmt->executeQuery());
-            int user_id = -1;
-            while (user->next()) {
-              std::cout << user->getInt(1);
-              user_id = user->getInt(1);
-            }
+          //      Получаем  Id нового пользователя
+          std::unique_ptr<sql::PreparedStatement> userIdStmt(
+              conn->prepareStatement("Select id From user where login = ?;"));
+          userIdStmt->setString(1, log);
+          std::unique_ptr<sql::ResultSet> user(userIdStmt->executeQuery());
+          int user_id = -1;
+          while (user->next()) {
+            std::cout << user->getInt(1);
+            user_id = user->getInt(1);
+          }
 
-            pas += randomString(20);
-            pas = md5(pas);
+          pas += randomString(20);
+          pas = md5(pas);
 
-            //        Создаем токен сессии для нового пользователя
-            createToken(pas, user_id);
-            res.set(http::field::set_cookie, "access_token=" + pas + ";path=/");
+          //        Создаем токен сессии для нового пользователя
+          createToken(pas, user_id);
+          res.set(http::field::set_cookie, "access_token=" + pas + ";path=/");
 
-            nlohmann::json body;
-            body["status"] = 200;
-            body["message"] = "OK";
-            body["access_token"] = md5(pas);
-            res.body() = body.dump();
-            res.set(http::field::content_length, body.dump().size());
-            return res;
-        }
+          nlohmann::json body;
+          body["status"] = 200;
+          body["message"] = "OK";
+          body["access_token"] = md5(pas);
+          res.body() = body.dump();
+          res.set(http::field::content_length, body.dump().size());
+          return res;
       }
+    }
 
     if (!isLogin(log)) {
       return templateReturn(400, "Invalid login");
@@ -101,7 +102,8 @@ http::response<http::string_body> ViewRegistration::post() {
       return templateReturn(400, "Invalid password");
     }
   }
-  return templateReturn(400, "Invalid params or params count");;
+  return templateReturn(400, "Invalid params or params count");
+  ;
 }
 
 http::response<http::string_body> ViewRegistration::get() {
@@ -141,9 +143,9 @@ http::response<http::string_body> ViewRegistration::put() {
   return defaultPlug();
 }
 
-ViewRegistration::ViewRegistration(const http::request<http::string_body> &_req,
-                                   const std::shared_ptr<sql::Connection> &_conn,
-                                   int _userId, std::string _ip)
+ViewRegistration::ViewRegistration(
+    const http::request<http::string_body> &_req,
+    const std::shared_ptr<sql::Connection> &_conn, int _userId, std::string _ip)
     : View(_req, _conn, _userId), ip(std::move(_ip)) {}
 
 int ViewRegistration::returnUser(const std::string &password,
@@ -177,7 +179,7 @@ std::string ViewRegistration::randomString(int size) {
   std::string str;
   srand(time(0));
   for (int i = 0; i < size; ++i) {
-    str += std::to_string((char) rand() % 256);
+    str += std::to_string((char)rand() % 256);
   }
   return str;
 }
@@ -194,22 +196,20 @@ void ViewRegistration::createToken(const std::string &token,
   } catch (sql::SQLException &e) {
     std::cout << e.what() << std::endl;
   }
-
 }
 
-int ViewRegistration::isDuplicate(const std::string &login, const std::string &email) {
+int ViewRegistration::isDuplicate(const std::string &login,
+                                  const std::string &email) {
   int res = 0;
   std::unique_ptr<sql::PreparedStatement> loginDuplicateStmt(
       conn->prepareStatement("Select * From user where login = ?;"));
   loginDuplicateStmt->setString(1, login);
   std::unique_ptr<sql::ResultSet> result1(loginDuplicateStmt->executeQuery());
-  if (result1->next())
-    res += 1;
+  if (result1->next()) res += 1;
   std::unique_ptr<sql::PreparedStatement> emailDuplicateStmt(
       conn->prepareStatement("Select * From user where email = ?;"));
   emailDuplicateStmt->setString(1, email);
   std::unique_ptr<sql::ResultSet> result2(emailDuplicateStmt->executeQuery());
-  if (result2->next())
-    res += 2;
+  if (result2->next()) res += 2;
   return res;
 }

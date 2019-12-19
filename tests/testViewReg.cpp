@@ -1,15 +1,14 @@
+#include <Md5.h>
 #include <cppconn/connection.h>
 #include <cppconn/driver.h>
 #include <gtest/gtest.h>
 #include <boost/asio.hpp>
 #include <nlohmann/json.hpp>
-#include <Md5.h>
 #include "ViewOther.h"
 #include "ViewRegistration.h"
 
-
 class ViewRegTest : public testing::Test {
-protected:
+ protected:
   void SetUp() override {
     req.version(11);
     req.set(http::field::user_agent, "test");
@@ -19,25 +18,25 @@ protected:
     std::shared_ptr<sql::Connection> conn(
         driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
     con = conn;
-    con->setSchema("MeetYou");
-    std::unique_ptr<sql::PreparedStatement> Stmt1(
-        con->prepareStatement("Delete From user Where login = \"Cheburashka\""));
+    con->setSchema("MeetYouTest");
+    std::unique_ptr<sql::PreparedStatement> Stmt1(con->prepareStatement(
+        "Delete From user Where login = \"Cheburashka\""));
     Stmt1->executeQuery();
-    std::unique_ptr<sql::PreparedStatement> Stmt2(
-        con->prepareStatement("Delete From user Where email = \"email@email.ru\""));
+    std::unique_ptr<sql::PreparedStatement> Stmt2(con->prepareStatement(
+        "Delete From user Where email = \"email@email.ru\""));
     Stmt2->executeQuery();
     std::unique_ptr<sql::PreparedStatement> Stmt(
-        con->prepareStatement("Insert into user(login, password, email) Values (\"login12\", ?, \"email@email.ru\");"));
+        con->prepareStatement("Insert into user(login, password, email) Values "
+                              "(\"login12\", ?, \"email@email.ru\");"));
     Stmt->setString(1, md5("qwerty1234"));
     Stmt->executeQuery();
-
-
   }
 
   void TearDown() override {
-    std::unique_ptr<sql::PreparedStatement> Stmt(
-        con->prepareStatement("Delete From user Where login = \"Cheburashka\""));
-    std::unique_ptr<sql::PreparedStatement> Stmt2(con->prepareStatement("Delete From user Where login = \"login12\""));
+    std::unique_ptr<sql::PreparedStatement> Stmt(con->prepareStatement(
+        "Delete From user Where login = \"Cheburashka\""));
+    std::unique_ptr<sql::PreparedStatement> Stmt2(
+        con->prepareStatement("Delete From user Where login = \"login12\""));
     Stmt->executeQuery();
     Stmt2->executeQuery();
   }
@@ -61,7 +60,6 @@ TEST_F(ViewRegTest, Registeration) {
   ASSERT_EQ(body["message"], "OK");
 }
 
-
 TEST_F(ViewRegTest, duplicateRegisteration1) {
   nlohmann::json body;
   body["login"] = "login12";
@@ -75,7 +73,6 @@ TEST_F(ViewRegTest, duplicateRegisteration1) {
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "Duplicate login");
 }
-
 
 TEST_F(ViewRegTest, duplicateRegisteration2) {
   nlohmann::json body;
@@ -116,7 +113,6 @@ TEST_F(ViewRegTest, badRegisterationJSON) {
   ASSERT_EQ(body["message"], "JSON error");
 }
 
-
 TEST_F(ViewRegTest, badLoginJSON) {
   nlohmann::json body;
   std::string str = "{ \"ds\": 34";
@@ -153,7 +149,6 @@ TEST_F(ViewRegTest, LoginWithLogin) {
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["status"], 200);
 }
-
 
 TEST_F(ViewRegTest, LoginWithEmail) {
   nlohmann::json body;

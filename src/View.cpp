@@ -20,7 +20,8 @@ http::response<http::string_body> View::defaultPlug() {
   return res;
 }
 
-http::response<http::string_body> View::templateReturn(int status, const std::string& message) {
+http::response<http::string_body> View::templateReturn(
+    int status, const std::string& message) {
   http::response<http::string_body> res;
   res.result(status);
   res.set(http::field::content_type, "json/application");

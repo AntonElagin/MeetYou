@@ -44,7 +44,7 @@ set(ALL_SOURCES
         ${SRC_DIR}/ViewEvent.cpp
         ${SRC_DIR}/ViewEventFollow.cpp
         ${SRC_DIR}/ViewUserFollow.cpp
-        ${SRC_DIR}/ViewUserHobby.cpp src/ViewEventHobby.cpp)
+        ${SRC_DIR}/ViewUserHobby.cpp src/ViewEventHobby.cpp src/ViewFindEvent.cpp)
 
 set(ALL_HEADERS
         ${INC_DIR}/Router.h
@@ -69,7 +69,7 @@ set(ALL_HEADERS
         ${INC_DIR}/ViewEvent.h
         ${INC_DIR}/ViewEventFollow.h
         ${INC_DIR}/ViewUserFollow.h
-        ${INC_DIR}/ViewUserHobby.h include/ViewEventHobby.h)
+        ${INC_DIR}/ViewUserHobby.h include/ViewEventHobby.h include/ViewFindEvent.h)
 
 set(TEST_FILES
         #        ${TEST_DIR}/tests.cpp

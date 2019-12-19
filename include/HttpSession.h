@@ -18,7 +18,6 @@ using tcp = boost::asio::ip::tcp;
 // Обрабатывает соединение HTTP-сервера
 class HttpSession : public std::enable_shared_from_this<HttpSession>,
                     public IHttpSession {
-
   beast::tcp_stream stream;
   beast::flat_buffer buffer;
   Queue<HttpSession> queue;

@@ -19,8 +19,7 @@ bool AuthMiddleware::isAuth() {
       std::shared_ptr<sql::ResultSet> result(st->executeQuery());
       while (result->next()) {
         // Добавил проверку ip, с которого пришел запрос
-        if (result->getString("ip") != md5(ip))
-          return false;
+        if (result->getString("ip") != md5(ip)) return false;
         authUser = result->getInt("user_id");
         return true;
       }
@@ -32,9 +31,10 @@ bool AuthMiddleware::isAuth() {
   return false;
 }
 
-AuthMiddleware::AuthMiddleware(std::shared_ptr<sql::Connection> _conn,
-                               boost::beast::http::request<boost::beast::http::string_body> _req,
-                               const std::string &_ip)
+AuthMiddleware::AuthMiddleware(
+    std::shared_ptr<sql::Connection> _conn,
+    boost::beast::http::request<boost::beast::http::string_body> _req,
+    const std::string &_ip)
     : conn(std::move(_conn)), req(std::move(_req)), authUser(-1), ip(_ip) {}
 
 int AuthMiddleware::getUserId() { return authUser; }

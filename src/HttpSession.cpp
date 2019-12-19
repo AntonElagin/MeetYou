@@ -41,7 +41,8 @@ void HttpSession::onRead(beast::error_code ec, std::size_t bytes_transferred) {
   }
   // Отправляем ответ
   // TODO : заменить на роутинг
-  Router router(parser->release(), stream.socket().remote_endpoint().address().to_string());
+  Router router(parser->release(),
+                stream.socket().remote_endpoint().address().to_string());
   router.startRouting(queue);
 
   // Если мы не находимся на пределе очереди, попробуйте передать другой запрос
@@ -74,5 +75,3 @@ void HttpSession::doClose() {
 }
 
 beast::tcp_stream& HttpSession::getStream() { return stream; }
-
-

@@ -1,14 +1,13 @@
+#include <Md5.h>
 #include <cppconn/connection.h>
 #include <cppconn/driver.h>
 #include <gtest/gtest.h>
 #include <boost/asio.hpp>
 #include <nlohmann/json.hpp>
-#include <Md5.h>
 #include "ViewEvent.h"
 
-
 class ViewEventTest : public testing::Test {
-protected:
+ protected:
   void SetUp() override {
     req.version(11);
     req.set(http::field::user_agent, "test");
@@ -18,18 +17,18 @@ protected:
     std::shared_ptr<sql::Connection> conn(
         driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
     con = conn;
-    con->setSchema("MeetYou");
+    con->setSchema("MeetYouTest");
 
     //
-    std::unique_ptr<sql::PreparedStatement> del(
-        con->prepareStatement("Delete From user Where login = \"testlogin1321\""));
+    std::unique_ptr<sql::PreparedStatement> del(con->prepareStatement(
+        "Delete From user Where login = \"testlogin1321\""));
     del->executeQuery();
     std::unique_ptr<sql::PreparedStatement> del2(
         con->prepareStatement("Delete From event Where name = \"event_name\""));
     del->executeQuery();
     del2->executeQuery();
-//
-//
+    //
+    //
     std::unique_ptr<sql::PreparedStatement> Stmt(con->prepareStatement(
         "Insert into user(login, password, email) Values (?, ?, ?);"));
     Stmt->setString(1, "testlogin1321");
@@ -37,18 +36,17 @@ protected:
     Stmt->setString(3, "email@kek.ru");
     Stmt->execute();
 
-
-    std::unique_ptr<sql::PreparedStatement> stmt(con->prepareStatement(
-        "Select id from user where login = ?"));
+    std::unique_ptr<sql::PreparedStatement> stmt(
+        con->prepareStatement("Select id from user where login = ?"));
     stmt->setString(1, "testlogin1321");
     std::unique_ptr<sql::ResultSet> result(stmt->executeQuery());
-    if (result->next())
-      eventId = result->getInt(1);
-//
-//
+    if (result->next()) userId = result->getInt(1);
+    //
+    //
 
-    std::unique_ptr<sql::PreparedStatement> Stmt1(con->prepareStatement(
-        "Insert into event(name, type, description, date, admin) Values (?, ?, ?, ?, ?);"));
+    std::unique_ptr<sql::PreparedStatement> Stmt1(
+        con->prepareStatement("Insert into event(name, type, description, "
+                              "date, admin) Values (?, ?, ?, ?, ?);"));
     Stmt1->setString(1, "event_name");
     Stmt1->setString(2, md5("mytype"));
     Stmt1->setString(3, "qwertyuwqeqwe");
@@ -56,23 +54,20 @@ protected:
     Stmt1->setInt(5, userId);
 
     Stmt1->execute();
-    std::unique_ptr<sql::PreparedStatement> stmt1(con->prepareStatement(
-        "Select id from event where name = ?"));
+    std::unique_ptr<sql::PreparedStatement> stmt1(
+        con->prepareStatement("Select id from event where name = ?"));
     stmt->setString(1, "event_name");
     std::unique_ptr<sql::ResultSet> result1(stmt->executeQuery());
-    if (result1->next())
-      eventId = result1->getInt(1);
-
+    if (result1->next()) eventId = result1->getInt(1);
   }
 
   void TearDown() override {
-    std::unique_ptr<sql::PreparedStatement> Stmt(
-        con->prepareStatement("Delete From user Where login = \"testlogin1321\""));
+    std::unique_ptr<sql::PreparedStatement> Stmt(con->prepareStatement(
+        "Delete From user Where login = \"testlogin1321\""));
     Stmt->executeQuery();
-    std::unique_ptr<sql::PreparedStatement> del2(
-        con->prepareStatement("Delete From event Where name = \"event_name123\""));
+    std::unique_ptr<sql::PreparedStatement> del2(con->prepareStatement(
+        "Delete From event Where name = \"event_name123\""));
     del2->executeQuery();
-
   }
 
   sql::Driver *driver{};
@@ -80,7 +75,6 @@ protected:
   http::request<http::string_body> req;
   int userId{}, eventId{};
 };
-
 
 TEST_F(ViewEventTest, goodGet) {
   nlohmann::json body;
@@ -259,7 +253,6 @@ TEST_F(ViewEventTest, badPost_date1) {
   ASSERT_EQ(body["message"], "Invalid date");
 }
 
-
 TEST_F(ViewEventTest, badPost_date2) {
   nlohmann::json body;
   body["name"] = "event_name123";
@@ -274,8 +267,6 @@ TEST_F(ViewEventTest, badPost_date2) {
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "Invalid date");
 }
-
-
 
 TEST_F(ViewEventTest, GoodPut_name) {
   nlohmann::json body;
@@ -321,7 +312,6 @@ TEST_F(ViewEventTest, badPut) {
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "Invalid params or params count");
 }
-
 
 TEST_F(ViewEventTest, badPut_nameStr) {
   nlohmann::json body;
@@ -382,7 +372,6 @@ TEST_F(ViewEventTest, badPut_date1) {
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "Invalid date");
 }
-
 
 TEST_F(ViewEventTest, badutt_date2) {
   nlohmann::json body;

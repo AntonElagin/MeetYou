@@ -1,14 +1,13 @@
+#include <Md5.h>
 #include <cppconn/connection.h>
 #include <cppconn/driver.h>
 #include <gtest/gtest.h>
 #include <boost/asio.hpp>
 #include <nlohmann/json.hpp>
-#include <Md5.h>
 #include "ViewUser.h"
 
-
 class ViewUserTest : public testing::Test {
-protected:
+ protected:
   void SetUp() override {
     req.version(11);
     req.set(http::field::user_agent, "test");
@@ -18,16 +17,17 @@ protected:
     std::shared_ptr<sql::Connection> conn(
         driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
     con = conn;
-    con->setSchema("MeetYou");
+    con->setSchema("MeetYouTest");
 
     //
-    std::unique_ptr<sql::PreparedStatement> del(
-        con->prepareStatement("Delete From user Where login = \"testlogin1321\""));
+    std::unique_ptr<sql::PreparedStatement> del(con->prepareStatement(
+        "Delete From user Where login = \"testlogin1321\""));
     del->executeQuery();
-//
+    //
     try {
       std::unique_ptr<sql::PreparedStatement> Stmt(con->prepareStatement(
-          "Insert into user(login, password, email, name, surname, sex, birthday, location) Values (?, ?, ?, ?, ?, ?, ?, ?);"));
+          "Insert into user(login, password, email, name, surname, sex, "
+          "birthday, location) Values (?, ?, ?, ?, ?, ?, ?, ?);"));
       Stmt->setString(1, "testlogin1321");
       Stmt->setString(2, md5("password123"));
       Stmt->setString(3, "email@kek.ru");
@@ -40,16 +40,12 @@ protected:
     } catch (sql::SQLException &e) {
       auto str = e.what();
       std::cout << e.what();
-
     }
-    std::unique_ptr<sql::PreparedStatement> stmt(con->prepareStatement(
-        "Select id from user where login = ?"));
+    std::unique_ptr<sql::PreparedStatement> stmt(
+        con->prepareStatement("Select id from user where login = ?"));
     stmt->setString(1, "testlogin1321");
     std::unique_ptr<sql::ResultSet> result(stmt->executeQuery());
-    if (result->next())
-      userId = result->getInt(1);
-
-
+    if (result->next()) userId = result->getInt(1);
   }
 
   void TearDown() override {
@@ -153,7 +149,6 @@ TEST_F(ViewUserTest, badPost_1) {
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "Invalid params or params count");
 }
-
 
 TEST_F(ViewUserTest, badPost_2) {
   nlohmann::json body;

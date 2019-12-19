@@ -2,12 +2,32 @@
 
 ViewEventFollow::ViewEventFollow(const http::request<http::string_body> &_req,
                                  const std::shared_ptr<sql::Connection> &_conn,
-                                 int _userId) : View(_req, _conn, _userId) {
-
-}
+                                 int _userId)
+    : View(_req, _conn, _userId) {}
 
 http::response<http::string_body> ViewEventFollow::get() {
-  return defaultPlug();
+  boost::beast::http::response<http::string_body> res;
+  res.set(http::field::content_type, "application/json");
+  nlohmann::json respBody;
+  std::unique_ptr<sql::PreparedStatement> userStmt(conn->prepareStatement(
+      "select name, type, date, u.id from MeetYou.event u INNER JOIN "
+      "MeetYou.followers f ON (f.event_id = u.id) where user_id = ? ;"));
+  userStmt->setInt(1, userId);
+  std::unique_ptr<sql::ResultSet> followers(userStmt->executeQuery());
+  while (followers->next()) {
+    respBody["followers"] += {
+        {"name", followers->getString(1)},
+        {"type", followers->getString(2)},
+        {"date", followers->getString(3)},
+        {"event_id", followers->getString(4)},
+    };
+  }
+  if (!respBody.contains("followers"))
+    respBody["followers"] = std::vector<std::string>();
+  res.result(200);
+  res.body() = respBody.dump();
+  res.set(http::field::content_length, respBody.dump().size());
+  return res;
 }
 
 http::response<http::string_body> ViewEventFollow::post() {
@@ -20,7 +40,8 @@ http::response<http::string_body> ViewEventFollow::post() {
   if (js.contains("event_id")) {
     if (js["event_id"].is_number_unsigned()) {
       std::unique_ptr<sql::PreparedStatement> isFollowerStmt(
-          conn->prepareStatement("Select * from followers where event_id = ? and user_id = ?"));
+          conn->prepareStatement(
+              "Select * from followers where event_id = ? and user_id = ?"));
       isFollowerStmt->setInt(1, js["event_id"]);
       isFollowerStmt->setInt(2, userId);
       std::unique_ptr<sql::ResultSet> user(isFollowerStmt->executeQuery());
@@ -36,7 +57,8 @@ http::response<http::string_body> ViewEventFollow::post() {
     }
     return templateReturn(400, "Invalid event_id");
   }
-  return templateReturn(400, "Invalid data");;
+  return templateReturn(400, "Invalid data");
+  ;
 }
 
 http::response<http::string_body> ViewEventFollow::delete_() {

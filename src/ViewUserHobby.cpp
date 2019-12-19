@@ -56,13 +56,14 @@ http::response<http::string_body> ViewUserHobby::post() {
   bool b = reqBody["hobby"].is_array();
   bool c = reqBody["hobby"].is_string();
 
-  if (!(reqBody.contains("hobby") && (reqBody["hobby"].is_array() || reqBody["hobby"].is_string())))
+  if (!(reqBody.contains("hobby") &&
+        (reqBody["hobby"].is_array() || reqBody["hobby"].is_string())))
     return templateReturn(400, "Invalid params or params count");
 
-  std::unique_ptr<sql::PreparedStatement> hobbyStmt(
-      conn->prepareStatement("INSERT into userhobby(user_id, hobby) Values(?,?);"));
-  std::unique_ptr<sql::PreparedStatement> validateStmt(
-      conn->prepareStatement("Select * from userhobby where user_id = ? and hobby = ?;"));
+  std::unique_ptr<sql::PreparedStatement> hobbyStmt(conn->prepareStatement(
+      "INSERT into userhobby(user_id, hobby) Values(?,?);"));
+  std::unique_ptr<sql::PreparedStatement> validateStmt(conn->prepareStatement(
+      "Select * from userhobby where user_id = ? and hobby = ?;"));
   if (reqBody["hobby"].is_string()) {
     std::string hobby = reqBody["hobby"];
     validateStmt->setInt(1, userId);
@@ -75,7 +76,7 @@ http::response<http::string_body> ViewUserHobby::post() {
     }
   } else {
     std::vector<std::string> list = reqBody["hobby"];
-    for (const auto &iter: list) {
+    for (const auto &iter : list) {
       validateStmt->setInt(1, userId);
       validateStmt->setString(2, iter);
       std::unique_ptr<sql::ResultSet> valid(validateStmt->executeQuery());
@@ -101,11 +102,12 @@ http::response<http::string_body> ViewUserHobby::delete_() {
     return templateReturn(400, "Invalid JSON");
   }
 
-  if (!(reqBody.contains("hobby") && (reqBody["hobby"].is_array() || reqBody["hobby"].is_string())))
+  if (!(reqBody.contains("hobby") &&
+        (reqBody["hobby"].is_array() || reqBody["hobby"].is_string())))
     return templateReturn(400, "Invalid params or params count");
 
-  std::unique_ptr<sql::PreparedStatement> hobbyStmt(
-      conn->prepareStatement("DELETE FROM userhobby WHERE user_id = ? and hobby = ?;"));
+  std::unique_ptr<sql::PreparedStatement> hobbyStmt(conn->prepareStatement(
+      "DELETE FROM userhobby WHERE user_id = ? and hobby = ?;"));
   if (reqBody["hobby"].is_string()) {
     std::string hobby = reqBody["hobby"];
     hobbyStmt->setString(2, hobby);
@@ -113,7 +115,7 @@ http::response<http::string_body> ViewUserHobby::delete_() {
     hobbyStmt->executeQuery();
   } else {
     std::vector<std::string> list = reqBody["hobby"];
-    for (const auto &iter: list) {
+    for (const auto &iter : list) {
       hobbyStmt->setString(2, iter);
       hobbyStmt->setInt(1, userId);
       hobbyStmt->executeQuery();
@@ -122,18 +124,9 @@ http::response<http::string_body> ViewUserHobby::delete_() {
   return templateReturn(200, "OK");
 }
 
-
-http::response<http::string_body> ViewUserHobby::put() {
-  return defaultPlug();
-}
+http::response<http::string_body> ViewUserHobby::put() { return defaultPlug(); }
 
 ViewUserHobby::ViewUserHobby(const http::request<http::string_body> &_req,
                              const std::shared_ptr<sql::Connection> &_conn,
-                             int _userId) : View(_req, _conn, _userId) {
-
-}
-
-
-
-
-
+                             int _userId)
+    : View(_req, _conn, _userId) {}

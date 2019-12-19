@@ -1,10 +1,9 @@
 #include "ViewEvent.h"
 #include "boost/date_time/gregorian/gregorian.hpp"
 
-
-ViewEvent::ViewEvent(const http::request<http::string_body> &_req, const std::shared_ptr<sql::Connection> &_conn,
-                     int _userId) : View(_req, _conn, _userId) {
-}
+ViewEvent::ViewEvent(const http::request<http::string_body> &_req,
+                     const std::shared_ptr<sql::Connection> &_conn, int _userId)
+    : View(_req, _conn, _userId) {}
 
 http::response<http::string_body> ViewEvent::get() {
   boost::beast::http::response<http::string_body> res;
@@ -20,8 +19,9 @@ http::response<http::string_body> ViewEvent::get() {
     std::string name = js["name"];
     std::string type, description, date, admin;
     // Поиск event
-    std::unique_ptr<sql::PreparedStatement> eventStmt(conn->prepareStatement(
-        "SELECT id, type, description, date, admin FROM event WHERE name = ?;"));
+    std::unique_ptr<sql::PreparedStatement> eventStmt(
+        conn->prepareStatement("SELECT id, type, description, date, admin FROM "
+                               "event WHERE name = ?;"));
     eventStmt->setString(1, name);
     std::unique_ptr<sql::ResultSet> event(eventStmt->executeQuery());
     bool flag = true;
@@ -34,19 +34,20 @@ http::response<http::string_body> ViewEvent::get() {
       respBody["date"] = event->getString(4);
       respBody["admin"] = event->getString(5);
     }
-    if (flag)
-      return templateReturn(404,"event does not found");
+    if (flag) return templateReturn(404, "event does not found");
     std::unique_ptr<sql::PreparedStatement> userStmt(conn->prepareStatement(
         "select login ,name, surname, u.id from MeetYou.user u\n"
-        "INNER JOIN MeetYou.followers f ON ( f.event_id = ? AND u.id = f.user_id) ;"));
+        "INNER JOIN MeetYou.followers f ON ( f.event_id = ? AND u.id = "
+        "f.user_id) ;"));
     userStmt->setInt(1, respBody["event_id"]);
     std::unique_ptr<sql::ResultSet> followers(userStmt->executeQuery());
     while (followers->next()) {
-        respBody["followers"] += {{"login",   followers->getString(1)},
-                                  {"name",    followers->getString(2)},
-                                  {"surname", followers->getString(3)},
-                                  {"user_id", followers->getString(4)},};
-
+      respBody["followers"] += {
+          {"login", followers->getString(1)},
+          {"name", followers->getString(2)},
+          {"surname", followers->getString(3)},
+          {"user_id", followers->getString(4)},
+      };
     }
     res.result(200);
     std::string body = respBody.dump();
@@ -66,28 +67,43 @@ http::response<http::string_body> ViewEvent::post() {
   } catch (nlohmann::json::parse_error &e) {
     return templateReturn(400, "JSON error");
   }
-  if (js.contains("name") && js.contains("type") && js.contains("description") && js.contains("date")) {
-    std::string name = js["name"],
-        type = js["type"],
-        description = js["description"],
-        date = js["date"];
+  if (js.contains("name") && js.contains("type") &&
+      js.contains("description") && js.contains("date")) {
+    std::string name = js["name"], type = js["type"],
+                description = js["description"], date = js["date"];
     int validCode = validate(name, type, description, date);
     if (!validCode) {
-      std::unique_ptr<sql::PreparedStatement> validateStmt(conn->prepareStatement(
-          "SELECT * FROM event WHERE name = ?;"));
+      std::unique_ptr<sql::PreparedStatement> validateStmt(
+          conn->prepareStatement("SELECT * FROM event WHERE name = ?;"));
       validateStmt->setString(1, name);
       std::unique_ptr<sql::ResultSet> result(validateStmt->executeQuery());
-      if (result->next())
-        return templateReturn(400, "Duplicate name");
+      if (result->next()) return templateReturn(400, "Duplicate name");
       // Создание ивента
-      std::unique_ptr<sql::PreparedStatement> userStmt(conn->prepareStatement(
-          "INSERT  INTO event(name, type, description, date, admin) VALUES (?,?,?,?,?);"));
-      userStmt->setString(1, name);
-      userStmt->setString(2, type);
-      userStmt->setString(3, description);
-      userStmt->setString(4, date);
-      userStmt->setInt(5, userId);
-      if (userStmt->execute()) throw "server error";
+      std::unique_ptr<sql::PreparedStatement> eventStmt(
+          conn->prepareStatement("INSERT  INTO event(name, type, description, "
+                                 "date, admin) VALUES (?,?,?,?,?);"));
+      eventStmt->setString(1, name);
+      eventStmt->setString(2, type);
+      eventStmt->setString(3, description);
+      eventStmt->setString(4, date);
+      eventStmt->setInt(5, userId);
+      if (eventStmt->execute()) throw "server error";
+
+      std::unique_ptr<sql::PreparedStatement> ideventStmt(
+          conn->prepareStatement("Select id from event where name =?"));
+      ideventStmt->setString(1, name);
+      std::unique_ptr<sql::ResultSet> resultId(ideventStmt->executeQuery());
+      int eventId = -1;
+      if (resultId->next()) eventId = resultId->getInt(1);
+
+      std::unique_ptr<sql::PreparedStatement> followerStmt(
+          conn->prepareStatement(
+              "Insert Into followers(user_id,event_id) values (?, ?);"));
+      followerStmt->setInt(1, userId);
+      followerStmt->setInt(2, eventId);
+      followerStmt->execute();
+      if (followerStmt->execute()) throw "server error";
+
       return templateReturn(200, "OK");
     }
     switch (validCode) {
@@ -104,9 +120,7 @@ http::response<http::string_body> ViewEvent::post() {
   return templateReturn(400, "Invalid params or params count");
 }
 
-http::response<http::string_body> ViewEvent::delete_() {
-  return defaultPlug();
-}
+http::response<http::string_body> ViewEvent::delete_() { return defaultPlug(); }
 
 http::response<http::string_body> ViewEvent::put() {
   boost::beast::http::response<http::string_body> res;
@@ -118,8 +132,10 @@ http::response<http::string_body> ViewEvent::put() {
     return templateReturn(400, "JSON error");
   }
   nlohmann::json respBody;
-  if ((js.contains("name") || (js.contains("event_id") && js["event_id"].is_number_integer())) && js.contains("type") &&
-      js.contains("description") && js.contains("date")) {
+  if ((js.contains("name") ||
+       (js.contains("event_id") && js["event_id"].is_number_integer())) &&
+      js.contains("type") && js.contains("description") &&
+      js.contains("date")) {
     int event_id = -1;
     std::string name;
 
@@ -128,15 +144,16 @@ http::response<http::string_body> ViewEvent::put() {
     else
       event_id = js["event_id"];
 
-    std::string type = js["type"],
-        description = js["description"],
-        date = js["date"];
+    std::string type = js["type"], description = js["description"],
+                date = js["date"];
 
-    int validCode = validate((name.length()!=0)?name:"username2", type, description, date);
+    int validCode = validate((name.length() != 0) ? name : "username2", type,
+                             description, date);
     if (!validCode) {
       std::unique_ptr<sql::PreparedStatement> userStmt(conn->prepareStatement(
-          "UPDATE event SET type = ?, description = ?, date = ? WHERE id = ? OR name = ? and admin = ?;"));
-//        userStmt->setString(1, name);
+          "UPDATE event SET type = ?, description = ?, date = ? WHERE id = ? "
+          "OR name = ? and admin = ?;"));
+      //        userStmt->setString(1, name);
       userStmt->setString(1, type);
       userStmt->setString(2, description);
       userStmt->setString(3, date);
@@ -160,21 +177,17 @@ http::response<http::string_body> ViewEvent::put() {
   return templateReturn(400, "Invalid params or params count");
 }
 
-
-int ViewEvent::validate(const std::string &name, const std::string &type, const std::string &description,
+int ViewEvent::validate(const std::string &name, const std::string &type,
+                        const std::string &description,
                         const std::string &_date) {
-  if (!(name.length() > 5 && name.length() < 50))
-    return 1;
-  if (!(type.length() > 5 && type.length() < 50))
-    return 2;
-  if (!(description.length() > 5 && description.length() < 200))
-    return 3;
+  if (!(name.length() > 5 && name.length() < 50)) return 1;
+  if (!(type.length() > 5 && type.length() < 50)) return 2;
+  if (!(description.length() > 5 && description.length() < 200)) return 3;
   try {
     using namespace boost::gregorian;
     date dt(from_string(_date));
     date now(day_clock::local_day());
-    if (now > dt)
-      return 4;
+    if (now > dt) return 4;
   } catch (...) {
     return 4;
   }
