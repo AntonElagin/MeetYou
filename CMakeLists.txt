@@ -46,7 +46,11 @@ set(ALL_SOURCES
         ${SRC_DIR}/ViewUserHobby.cpp
         ${SRC_DIR}/ViewEventHobby.cpp
         ${SRC_DIR}/ViewFindEvent.cpp
+        ${SRC_DIR}/CommonChatView.cpp
+        ${SRC_DIR}/MessageChatView.cpp
+        ${SRC_DIR}/UserChatView.cpp
         ${SRC_DIR}/SharedState.cpp
+
         )
 
 set(ALL_HEADERS
@@ -75,6 +79,9 @@ set(ALL_HEADERS
         ${INC_DIR}/ViewUserHobby.h
         ${INC_DIR}/ViewEventHobby.h
         ${INC_DIR}/ViewFindEvent.h
+        ${INC_DIR}/CommonChatView.h
+        ${INC_DIR}/MessageChatView.h
+        ${INC_DIR}/UserChatView.h
         ${INC_DIR}/SharedState.hpp)
 
 set(TEST_FILES
