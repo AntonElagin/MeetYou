@@ -121,4 +121,4 @@ target_link_libraries(runTests
         ${LIBMYSQLCLIENT_INCLUDE_DIRS}
         ${LIBMYSQLCLIENT_LIBRARIES}
         ${nlohmann_json}
-        nlohmann_json::nlohmann_json
+        nlohmann_json::nlohmann_json)
