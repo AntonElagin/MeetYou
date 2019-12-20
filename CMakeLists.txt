@@ -118,6 +118,7 @@ target_link_libraries(runServer ${Boost_LIBRARIES} pthread
 set(GTest_DIR "/home/anton/apps/googletest")
 find_package(GTest REQUIRED)
 
+
 include_directories(${GTEST_INCLUDE_DIRS})
 
 include_directories(SYSTEM ${GMOCK_DIR}/include ${GMOCK_DIR}/gtest/include)
