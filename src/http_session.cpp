@@ -1,10 +1,6 @@
 
 #include "http_session.hpp"
-#include "websocket_session.hpp"
-#include <boost/config.hpp>
-#include <iostream>
-#include <regex>
-#include "User.h"
+
 #define BOOST_NO_CXX14_GENERIC_LAMBDAS
 
 //------------------------------------------------------------------------------
@@ -261,37 +257,42 @@ void http_session::on_read(beast::error_code ec, std::size_t) {
         return fail(ec, "read");
     // See if it is a WebSocket Upgrade
     if (websocket::is_upgrade(parser_->get())) {
-        // Create a websocket session, transferring ownership
-        //   auto kek2 = parser_->get().at(http::field::cookie);
-//        ///проверка логина и пароля
+        AuthMiddleware auth(req);
+        User user;
+        user.userid = auth.getuserid();
         sql::Driver *driver = get_driver_instance();
         std::shared_ptr<sql::Connection> conn(driver->connect("tcp://127.0.0.1:3306", "root", "167839"));
-        conn->setSchema("meetyou");
+        conn->setSchema("meetyoutest");
         auto req = parser_->get();
-        User user;
-        std::string cookie = req.at(http::field::cookie).to_string();
-        std::smatch login;
-        std::regex r_login("login=(\\w+)");
-        if (std::regex_search(cookie, login, r_login)) {
-            std::smatch::iterator iter = login.begin();
-            iter++;
-            user.username= *iter;
-        }
-        std::smatch pass;
+        //std::string cookie = req.at(http::field::cookie).to_string();
+//        std::smatch login;
+//        std::regex r_login("login=(\\w+)");
+//        if (std::regex_search(cookie, login, r_login)) {
+//            std::smatch::iterator iter = login.begin();
+//            iter++;
+//            user.username= *iter;
+//        }
+        //std::smatch pass;
 
-        std::regex r_pass("pass=(\\w+)");
-        if (std::regex_search(cookie, pass, r_pass)) {
-            std::smatch::iterator iter = pass.begin();
-            iter++;
-            user.pass = *iter;
-        }
+//        std::regex r_pass("pass=(\\w+)");
+//        if (std::regex_search(cookie, pass, r_pass)) {
+//            std::smatch::iterator iter = pass.begin();
+//            iter++;
+//            user.pass = *iter;
+//        }
         auto target = req.target().to_string();
         std::shared_ptr<sql::PreparedStatement> stmt(
-                conn->prepareStatement("select id from User where username=? and password=?"));
-        stmt->setString(1, user.username);
-        stmt->setString(2, user.pass);
+                conn->prepareStatement("select * from user where id=?"));
+        stmt->setInt(1, user.userid);
+        stmt->executeQuery();
         std::shared_ptr<sql::ResultSet> res(stmt->executeQuery());
-        std::smatch result;
+        while (res->next()) {
+            user.username = res->getString("login");
+        }
+//        stmt->setString(1, user.username);
+//        stmt->setString(2, user.pass);
+//        std::shared_ptr<sql::ResultSet> res(stmt->executeQuery());
+//        std::smatch result;
         std::regex r_chat("/chat\\?id=(\\d+)");
         int chatid = -1;
         if (std::regex_search(target, result, r_chat)) {
@@ -299,9 +300,10 @@ void http_session::on_read(beast::error_code ec, std::size_t) {
             iter++;
             chatid = std::stoi(*iter);
         }
-        while (res->next()) {
-            user.userid = res->getInt("id");
-        }
+//        while (res->next()) {
+//            user.userid = res->getInt("id");
+//        }
+        ///проверили все права
         if (user.userid >= 0) {
             stmt.reset(conn->prepareStatement("select * from result_table where user_id=? and chat_id=?"));
             stmt->setInt(1, user.userid);
@@ -315,6 +317,7 @@ void http_session::on_read(beast::error_code ec, std::size_t) {
                                                   chatid, user)->run(parser_->release());
         } else {
             std::cerr << "error with data" << std::endl;
+            ///generate response access denied
         }
         return;
     }

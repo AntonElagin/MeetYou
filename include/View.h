@@ -6,7 +6,7 @@
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 #include <cppconn/connection.h>
-#include "cppconn/prepared_statement.h"
+#include <cppconn/prepared_statement.h>
 #include <boost/beast.hpp>
 #include <utility>
 #include <memory>

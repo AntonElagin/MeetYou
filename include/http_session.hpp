@@ -11,7 +11,9 @@
 #define BOOST_BEAST_EXAMPLE_WEBSOCKET_CHAT_MULTI_HTTP_SESSION_HPP
 
 #include <boost/asio.hpp>
-
+#include <iostream>
+#include "websocket_session.hpp"
+#include <regex>
 namespace net = boost::asio;                    // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;               // from <boost/asio/ip/tcp.hpp>
 #include <boost/beast.hpp>

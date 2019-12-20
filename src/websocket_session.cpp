@@ -1,9 +1,8 @@
 #include "websocket_session.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
 
-websocket_session::
-websocket_session(tcp::socket &&socket, boost::shared_ptr<shared_state> const &state,
-                  std::shared_ptr<sql::Connection> conn, int chatid, User user)
+websocket_session::websocket_session(tcp::socket &&socket, boost::shared_ptr<shared_state> const &state,
+                                     std::shared_ptr<sql::Connection> conn, int chatid, User user)
         : ws_(std::move(socket)), state_(state), chatid(chatid), conn(conn), user(user) {}
 
 websocket_session::~websocket_session() {
@@ -26,7 +25,7 @@ void websocket_session::on_accept(beast::error_code ec) {
     // Add this session to the list of active sessions
     ///load message from db
     std::unique_ptr<sql::PreparedStatement> stmt(conn->prepareStatement(
-            "select username nick,body,publication_date pubdate from Message, User where chat_id = ? and author_id = User.id order by publication_date asc;"));
+            "select login nick,body,publication_date pubdate from message, user where chat_id = ? and author_id = user.id order by publication_date asc;"));
     stmt->setInt(1, chatid);
     std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
     std::string text;
@@ -55,7 +54,7 @@ void websocket_session::on_read(beast::error_code ec, std::size_t) {
                            beast::buffers_to_string(buffer_.data());
     // Send to all connections
     std::unique_ptr<sql::PreparedStatement> stmt(conn->prepareStatement(
-            "INSERT INTO `Message` (`publication_date`, `body`, `author_id`, `chat_id`) VALUES (NOW(), ?, ?, ?)"));
+            "INSERT INTO `MeetYouTest`.`message` (`publication_date`, `body`, `author_id`, `chat_id`) VALUES (DEFAULT, ?, ?, ?)"));
     stmt->setString(1, message);
     stmt->setInt(2, user.userid);
     stmt->setInt(3, chatid);

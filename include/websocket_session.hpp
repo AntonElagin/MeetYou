@@ -3,23 +3,21 @@
 
 #include "shared_state.hpp"
 #include <boost/asio.hpp>
-#include <boost/beast.hpp>
 #include <cstdlib>
 #include <memory>
 #include <string>
 #include <vector>
 #include <iostream>
 #include "View.h"
-#include <cppconn/driver.h>
 #include <sstream>
 #include "User.h"
+#include <boost/beast.hpp>
 namespace beast = boost::beast;                 // from <boost/beast.hpp>
-namespace http = beast::http;                   // from <boost/beast/http.hpp>
+namespace http = boost::beast::http;                   // from <boost/beast/http.hpp>
 namespace websocket = beast::websocket;         // from <boost/beast/websocket.hpp>
 namespace net = boost::asio;                    // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;               // from <boost/asio/ip/tcp.hpp>
 
-class shared_state;
 
 /** Represents an active WebSocket connection to the server
 */
