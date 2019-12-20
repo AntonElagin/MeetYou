@@ -32,13 +32,48 @@ void HttpSession::onRead(beast::error_code ec, std::size_t bytes_transferred) {
   if (ec) return fail(ec, "read");
 
   // Если websocket
-  if (websocket::is_upgrade(parser->get())) {
-    // Создание сеанса websocket, передача прав на
-    //  сокет и HTTP-запрос.
-    std::make_shared<WebsocketSession>(stream.release_socket())
-        ->do_accept(parser->release());
-    return;
-  }
+    if (websocket::is_upgrade(parser_->get())) {
+        AuthMiddleware auth(req);
+        User user;
+        user.userid = auth.getuserid();
+        sql::Driver *driver = get_driver_instance();
+        std::shared_ptr<sql::Connection> conn(driver->connect("tcp://127.0.0.1:3306", "root", "167839"));
+        conn->setSchema("meetyoutest");
+        auto req = parser_->get();
+        auto target = req.target().to_string();
+        std::shared_ptr<sql::PreparedStatement> stmt(
+                conn->prepareStatement("select * from user where id=?"));
+        stmt->setInt(1, user.userid);
+        stmt->executeQuery();
+        std::shared_ptr<sql::ResultSet> res(stmt->executeQuery());
+        while (res->next()) {
+            user.username = res->getString("login");
+        }
+        std::regex r_chat("/chat\\?id=(\\d+)");
+        int chatid = -1;
+        if (std::regex_search(target, result, r_chat)) {
+            std::smatch::iterator iter = result.begin();
+            iter++;
+            chatid = std::stoi(*iter);
+        }
+        ///проверили все права
+        if (user.userid >= 0) {
+            stmt.reset(conn->prepareStatement("select * from result_table where user_id=? and chat_id=?"));
+            stmt->setInt(1, user.userid);
+            stmt->setInt(2, chatid);
+            res.reset(stmt->executeQuery());
+        };
+        if (res->next()) {
+            ///нет проверки валидности запроса(без куки упадет все)
+            // of both the socket and the HTTP request.
+            boost::make_shared<websocket_session>(stream_.release_socket(), state_, conn,
+                                                  chatid, user)->run(parser_->release());
+        } else {
+            std::cerr << "error with data" << std::endl;
+            ///generate response access denied
+        }
+        return;
+    }
   // Отправляем ответ
   // TODO : заменить на роутинг
   Router router(parser->release(),
