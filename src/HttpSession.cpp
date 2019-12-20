@@ -37,8 +37,8 @@ void HttpSession::onRead(beast::error_code ec, std::size_t bytes_transferred) {
   // Если websocket
   if (websocket::is_upgrade(parser->get())) {
     sql::Driver *driver = get_driver_instance();
-    std::shared_ptr<sql::Connection> conn(driver->connect("tcp://127.0.0.1:3306", "root", "167839"));
-    conn->setSchema("meetyou");
+    std::shared_ptr<sql::Connection> conn(driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
+    conn->setSchema("MeetYou");
     auto req = parser->get();
     AuthMiddleware auth(conn, req, stream.socket().remote_endpoint().address().to_string());
     auth.isAuth();

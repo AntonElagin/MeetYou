@@ -82,7 +82,7 @@ set(ALL_HEADERS
         ${INC_DIR}/CommonChatView.h
         ${INC_DIR}/MessageChatView.h
         ${INC_DIR}/UserChatView.h
-        ${INC_DIR}/SharedState.hpp)
+        ${INC_DIR}/SharedState.h)
 
 set(TEST_FILES
         #        ${TEST_DIR}/tests.cpp

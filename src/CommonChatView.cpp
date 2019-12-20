@@ -17,7 +17,7 @@ http::response<http::string_body> ViewChatCommon::post() {
                     admin_list.push_back(element);
             }
             std::unique_ptr<sql::PreparedStatement> chatStmt(conn->prepareStatement(
-                    "insert into chat (id,create_date, title) values (null,CURDATE() ,? )"));
+                    "insert into chat (id,create_date, title) values (null,default ,? )"));
             chatStmt->setString(1, title);
             chatStmt->executeUpdate();
             chatStmt.reset(conn->prepareStatement(
@@ -32,12 +32,14 @@ http::response<http::string_body> ViewChatCommon::post() {
             for (auto adminid:admin_list) {
                 temp_table_Stmt->setInt(1, chat_id);
                 temp_table_Stmt->setInt(2, adminid);
+                temp_table_Stmt->execute();
             }
             temp_table_Stmt.reset(conn->prepareStatement(
                     "INSERT INTO result_table (`chat_id`, `user_id`, `is_admin`) VALUES (?, ?, 0)"));
             for (auto memberid:members_list) {
                 temp_table_Stmt->setInt(1, chat_id);
                 temp_table_Stmt->setInt(2, memberid);
+                temp_table_Stmt->execute();
             }
             json body;
             body["message"] = "chat created";
