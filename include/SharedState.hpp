@@ -10,7 +10,7 @@
 #include <map>
 
 // Forward declaration
-class websocket_session;
+class WebsocketSession;
 
 // Represents the shared server state
 class SharedState {
@@ -18,7 +18,7 @@ class SharedState {
     // This mutex synchronizes all access to sessions_
     std::mutex mutex_;
     // Keep a list of all the connected clients
-    std::map<int, std::unordered_set<websocket_session *>> sessions_;
+    std::map<int, std::unordered_set<WebsocketSession *>> sessions_;
 
 public:
     explicit
@@ -29,9 +29,9 @@ public:
         return doc_root_;
     }
 
-    void join(websocket_session *session, int chatid);
+    void join(WebsocketSession *session, int chatid);
 
-    void leave(websocket_session *session, int chatid);
+    void leave(WebsocketSession *session, int chatid);
 
     void send(std::string message, int chatid);
 };

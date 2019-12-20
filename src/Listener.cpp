@@ -1,4 +1,5 @@
 #include "Listener.h"
+#include "Fail.h"
 
 Listener::Listener(net::io_context &_ioc, tcp::endpoint _endpoint)
     : ioc(_ioc),

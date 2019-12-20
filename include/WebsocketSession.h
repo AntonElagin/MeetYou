@@ -21,7 +21,7 @@ using tcp = boost::asio::ip::tcp;               // from <boost/asio/ip/tcp.hpp>
 
 /** Represents an active WebSocket connection to the server
 */
-class websocket_session : public boost::enable_shared_from_this<websocket_session> {
+class WebsocketSession : public boost::enable_shared_from_this<WebsocketSession> {
     beast::flat_buffer buffer_;
     std::shared_ptr<sql::Connection> conn;
     websocket::stream<beast::tcp_stream> ws_;
@@ -39,10 +39,10 @@ class websocket_session : public boost::enable_shared_from_this<websocket_sessio
     void on_write(beast::error_code ec, std::size_t bytes_transferred);
 
 public:
-    websocket_session(tcp::socket &&socket, boost::shared_ptr<SharedState> const &state,
-                      std::shared_ptr<sql::Connection> conn, int chatid,User );
+    WebsocketSession(tcp::socket &&socket, boost::shared_ptr<SharedState> const &state,
+                     std::shared_ptr<sql::Connection> conn, int chatid, User );
 
-    ~websocket_session();
+    ~WebsocketSession();
 
     template<class Body, class Allocator>
     void run(http::request<Body, http::basic_fields<Allocator>> req);
@@ -58,11 +58,11 @@ private:
 };
 
 template<class Body, class Allocator>
-void websocket_session::run(http::request<Body, http::basic_fields<Allocator>> req) {
+void WebsocketSession::run(http::request<Body, http::basic_fields<Allocator>> req) {
     // Set suggested timeout settings for the websocket
     ws_.set_option(websocket::stream_base::timeout::suggested(beast::role_type::server));
     // Accept the websocket handshake
-    ws_.async_accept(req, beast::bind_front_handler(&websocket_session::on_accept, shared_from_this()));
+    ws_.async_accept(req, beast::bind_front_handler(&WebsocketSession::on_accept, shared_from_this()));
 }
 
 
