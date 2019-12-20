@@ -1,13 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 project(techProject)
 
-# флаги
+
 #set(CMAKE_CXX_FLAGS "-O0 -fprofile-arcs -ftest-coverage")
 #set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 #SET(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
 #SET(CMAKE_C_FLAGS "-g -O0 -Wall -W -fprofile-arcs -ftest-coverage")
 #SET(CMAKE_EXE_LINKER_FLAGS "-fprofile-arcs -ftest-coverage")
-#
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -17,8 +16,8 @@ set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 
 
-#set(BOOST_INCLUDEDIR "/home/anton/apps/boost_1_71_0")
-#set(BOOST_LIBRARYDIR "/home/anton/apps/boost_1_71_0/stage/lib")
+set(BOOST_INCLUDEDIR "/home/anton/apps/boost_1_71_0")
+set(BOOST_LIBRARYDIR "/home/anton/apps/boost_1_71_0/stage/lib")
 set(Boost_NO_SYSTEM_PATHS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_LIBS ON)
@@ -44,7 +43,9 @@ set(ALL_SOURCES
         ${SRC_DIR}/ViewEvent.cpp
         ${SRC_DIR}/ViewEventFollow.cpp
         ${SRC_DIR}/ViewUserFollow.cpp
-        ${SRC_DIR}/ViewUserHobby.cpp src/ViewEventHobby.cpp src/ViewFindEvent.cpp)
+        ${SRC_DIR}/ViewUserHobby.cpp
+        ${SRC_DIR}/ViewEventHobby.cpp
+        ${SRC_DIR}/ViewFindEvent.cpp)
 
 set(ALL_HEADERS
         ${INC_DIR}/Router.h
@@ -69,7 +70,9 @@ set(ALL_HEADERS
         ${INC_DIR}/ViewEvent.h
         ${INC_DIR}/ViewEventFollow.h
         ${INC_DIR}/ViewUserFollow.h
-        ${INC_DIR}/ViewUserHobby.h include/ViewEventHobby.h include/ViewFindEvent.h)
+        ${INC_DIR}/ViewUserHobby.h
+        ${INC_DIR}/ViewEventHobby.h
+        ${INC_DIR}/ViewFindEvent.h)
 
 set(TEST_FILES
         #        ${TEST_DIR}/tests.cpp

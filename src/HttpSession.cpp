@@ -1,5 +1,6 @@
 #include "HttpSession.h"
 #include <cppconn/exception.h>
+#include <websocket_session.hpp>
 #include "AuthMiddleware.h"
 #include "Router.h"
 #include "mysql_driver.h"
