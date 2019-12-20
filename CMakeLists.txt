@@ -16,8 +16,8 @@ set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 
 
-#set(BOOST_INCLUDEDIR "/home/anton/apps/boost_1_71_0")
-#set(BOOST_LIBRARYDIR "/home/anton/apps/boost_1_71_0/stage/lib")
+set(BOOST_INCLUDEDIR "/home/anton/apps/boost_1_71_0")
+set(BOOST_LIBRARYDIR "/home/anton/apps/boost_1_71_0/stage/lib")
 set(Boost_NO_SYSTEM_PATHS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_LIBS ON)
