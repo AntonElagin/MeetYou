@@ -3,8 +3,8 @@
 
 websocket_session::
 websocket_session(tcp::socket &&socket, boost::shared_ptr<shared_state> const &state,
-                  std::shared_ptr<sql::Connection> conn, int chatid)
-        : ws_(std::move(socket)), state_(state), chatid(chatid), conn(conn) {}
+                  std::shared_ptr<sql::Connection> conn, int chatid, User user)
+        : ws_(std::move(socket)), state_(state), chatid(chatid), conn(conn), user(user) {}
 
 websocket_session::~websocket_session() {
     // Remove this session from the list of active sessions
@@ -50,13 +50,14 @@ void websocket_session::on_read(beast::error_code ec, std::size_t) {
     // Handle the error, if any
     if (ec) return fail(ec, "read");
     boost::posix_time::ptime timeLocal = boost::posix_time::second_clock::local_time();
-    auto message_text_ws = "login : " + boost::posix_time::to_simple_string(timeLocal) + " " +
+    auto message=beast::buffers_to_string(buffer_.data());
+    auto message_text_ws = boost::posix_time::to_simple_string(timeLocal) + " : " + user.username + " : " +
                            beast::buffers_to_string(buffer_.data());
     // Send to all connections
     std::unique_ptr<sql::PreparedStatement> stmt(conn->prepareStatement(
             "INSERT INTO `Message` (`publication_date`, `body`, `author_id`, `chat_id`) VALUES (NOW(), ?, ?, ?)"));
-    stmt->setString(1, message_text_ws);
-    stmt->setInt(2, userid);
+    stmt->setString(1, message);
+    stmt->setInt(2, user.userid);
     stmt->setInt(3, chatid);
     stmt->executeUpdate();
     state_->send(message_text_ws, chatid);

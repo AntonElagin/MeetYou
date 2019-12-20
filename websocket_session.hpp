@@ -12,6 +12,7 @@
 #include "View.h"
 #include <cppconn/driver.h>
 #include <sstream>
+#include "User.h"
 namespace beast = boost::beast;                 // from <boost/beast.hpp>
 namespace http = beast::http;                   // from <boost/beast/http.hpp>
 namespace websocket = beast::websocket;         // from <boost/beast/websocket.hpp>
@@ -29,7 +30,7 @@ class websocket_session : public boost::enable_shared_from_this<websocket_sessio
     boost::shared_ptr<shared_state> state_;
     std::vector<boost::shared_ptr<std::string const>> queue_;
     int chatid;
-    int userid = 2;
+    User user;
 
     void fail(beast::error_code ec, char const *what);
 
@@ -41,7 +42,7 @@ class websocket_session : public boost::enable_shared_from_this<websocket_sessio
 
 public:
     websocket_session(tcp::socket &&socket, boost::shared_ptr<shared_state> const &state,
-                      std::shared_ptr<sql::Connection> conn, int chatid);
+                      std::shared_ptr<sql::Connection> conn, int chatid,User );
 
     ~websocket_session();
 
