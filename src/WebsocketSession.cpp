@@ -54,7 +54,7 @@ void WebsocketSession::on_read(beast::error_code ec, std::size_t) {
                            beast::buffers_to_string(buffer_.data());
     // Send to all connections
     std::unique_ptr<sql::PreparedStatement> stmt(conn->prepareStatement(
-            "INSERT INTO `MeetYouTest`.`message` (`publication_date`, `body`, `author_id`, `chat_id`) VALUES (DEFAULT, ?, ?, ?)"));
+            "INSERT INTO `MeetYou`.`message` (`publication_date`, `body`, `author_id`, `chat_id`) VALUES (DEFAULT, ?, ?, ?)"));
     stmt->setString(1, message);
     stmt->setInt(2, user.userid);
     stmt->setInt(3, chatid);

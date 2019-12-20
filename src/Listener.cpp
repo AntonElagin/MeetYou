@@ -2,8 +2,7 @@
 #include "Fail.h"
 
 Listener::Listener(net::io_context &_ioc, tcp::endpoint _endpoint,boost::shared_ptr<SharedState> const &_state)
-    : ioc(_ioc),
-      acceptor(net::make_strand(_ioc))
+    : ioc(_ioc),acceptor(net::make_strand(_ioc)),state(_state)
 
 {
   beast::error_code ec;

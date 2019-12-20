@@ -25,19 +25,17 @@ class session : public std::enable_shared_from_this<session> {
     websocket::stream<beast::tcp_stream> ws_;
     beast::flat_buffer buffer_;
     std::string host_;
-    std::string text_;
-    std::string pass_;
+    std::string token;
     std::string chatid_;
 public:
     // Resolver and socket require an io_context
     explicit session(net::io_context &ioc) : resolver_(net::make_strand(ioc)), ws_(net::make_strand(ioc)) {}
 
     // Start the asynchronous operation
-    void run(char const *host, char const *port, char const *login, char const *pass, char const* chatid) {
+    void run(char const *host, char const *port, char const *token_, char const* chatid) {
         // Save these for later
         host_ = host;
-        text_ = login;
-        pass_ = pass;
+        token = token_;
         chatid_=chatid;
         // Look up the domain name
         resolver_.async_resolve(host, port, beast::bind_front_handler(&session::on_resolve, shared_from_this()));
@@ -61,7 +59,7 @@ public:
         // Set suggested timeout settings for the websocket
         ws_.set_option(websocket::stream_base::timeout::suggested(beast::role_type::client));
         // Set a decorator to change the User-Agent of the handshake
-        std::string buffer = "login=" + text_ + "; " + "pass=" + pass_;
+        std::string buffer = "access_token=" + token;
         ws_.set_option(websocket::stream_base::decorator([&buffer](websocket::request_type &req) {
             req.set(http::field::user_agent, std::string(BOOST_BEAST_VERSION_STRING) + " websocket-client-coro");
             req.set(http::field::cookie, buffer);
@@ -90,7 +88,7 @@ public:
             ws_.write(net::buffer(str), ec);
             if (ec) return fail(ec, "write");
         }
-        ws_.async_write(net::buffer(text_), beast::bind_front_handler(&session::on_write, shared_from_this()));
+        ws_.async_write(net::buffer(token), beast::bind_front_handler(&session::on_write, shared_from_this()));
     }
 
     void on_write(beast::error_code ec, std::size_t bytes_transferred) {
@@ -122,22 +120,21 @@ public:
 //------------------------------------------------------------------------------
 int main(int argc, char **argv) {
     // Check command line arguments.
-    if (argc != 6) {
+    if (argc != 5) {
         std::cerr <<
                   "Usage: websocket-client-async <host> <port> <login> <pass> <chatid_>\n" <<
                   "Example:\n" <<
-                  "    websocket-client 127.0.0.1 8080 vova500 1234 2";
+                  "    127.0.0.1 8080 fsfkewr249 2";
         return EXIT_FAILURE;
     }
     auto const host = argv[1];
     auto const port = argv[2];
-    auto const login = argv[3];
-    auto const pass = argv[4];
-    auto const chatid = argv[5];
+    auto const token = argv[3];
+    auto const chatid = argv[4];
     // The io_context is required for all I/O
     net::io_context ioc;
     // Launch the asynchronous operation
-    std::make_shared<session>(ioc)->run(host, port, login, pass,chatid);
+    std::make_shared<session>(ioc)->run(host, port, token,chatid);
     // Run the I/O service. The call will return when
     // the socket is closed.
     ioc.run();

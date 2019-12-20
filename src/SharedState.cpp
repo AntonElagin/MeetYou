@@ -2,13 +2,9 @@
 #include "WebsocketSession.h"
 
 
-SharedState::
-SharedState(){
-}
+SharedState::SharedState() {}
 
-void
-SharedState::
-join(WebsocketSession *session, int chatid) {
+void SharedState::join(WebsocketSession *session, int chatid) {
     std::lock_guard<std::mutex> lock(mutex_);
     sessions_[chatid].insert(session);
 }

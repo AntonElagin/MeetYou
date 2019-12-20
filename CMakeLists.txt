@@ -16,15 +16,15 @@ set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 
 
-set(BOOST_INCLUDEDIR "/home/anton/apps/boost_1_71_0")
-set(BOOST_LIBRARYDIR "/home/anton/apps/boost_1_71_0/stage/lib")
+#set(BOOST_INCLUDEDIR "/home/anton/apps/boost_1_71_0")
+#set(BOOST_LIBRARYDIR "/home/anton/apps/boost_1_71_0/stage/lib")
 set(Boost_NO_SYSTEM_PATHS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 set(BOOST_ALL_DYN_LINK OFF)
-#set(nlohmann_json_DIR "/home/andrey/CLionProjects/json")
-set(nlohmann_json_DIR "/home/anton/apps/json")
+set(nlohmann_json_DIR "/home/andrey/CLionProjects/json")
+#set(nlohmann_json_DIR "/home/anton/apps/json")
 include_directories(include)
 
 set(ALL_SOURCES
@@ -139,3 +139,5 @@ target_link_libraries(runTests
         ${LIBMYSQLCLIENT_LIBRARIES}
         ${nlohmann_json}
         nlohmann_json::nlohmann_json)
+add_executable(client some_clients/client.cpp)
+target_link_libraries(client pthread)
