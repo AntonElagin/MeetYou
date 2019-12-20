@@ -35,11 +35,11 @@ public:
                         admin_list.push_back(element);
                 }
                 std::unique_ptr<sql::PreparedStatement> chatStmt(conn->prepareStatement(
-                        "insert into Chat (id,create_date, title) values (null,CURDATE() ,? )"));
+                        "insert into chat (id,create_date, title) values (null,CURDATE() ,? )"));
                 chatStmt->setString(1, title);
                 chatStmt->executeUpdate();
                 chatStmt.reset(conn->prepareStatement(
-                        "select id from Chat where title like ? order by create_date desc"));
+                        "select id from chat where title like ? order by create_date desc"));
                 chatStmt->setString(1, title);
                 std::unique_ptr<sql::ResultSet> res(chatStmt->executeQuery());
                 int chat_id = -1;
@@ -204,13 +204,13 @@ public:
             } else
                 try {
                     std::unique_ptr<sql::PreparedStatement> chatStmt(conn->prepareStatement(
-                            "DELETE FROM `Chat` WHERE `id` = ?"));
+                            "DELETE FROM chat WHERE `id` = ?"));
                     chatStmt->setInt(1, chatid);
                     chatStmt->executeUpdate();
                     chatStmt.reset(conn->prepareStatement(
                             "DELETE FROM `result_table` WHERE `chat_id` = ?"));
                     chatStmt->executeUpdate();
-                    body["message"] = "Chat deleted";
+                    body["message"] = "chat deleted";
                     ResponseCreator resp(body, 0);
                     return resp.get_resp();
                 }
