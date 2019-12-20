@@ -4,7 +4,6 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/config.hpp>
 #include <string>
-#include <cppconn/connection.h>
 #include "CommonChatView.h"
 #include "MessageChatView.h"
 

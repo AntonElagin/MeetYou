@@ -1,5 +1,5 @@
-#ifndef PLUS_PROJECT_VIEW_H
-#define PLUS_PROJECT_VIEW_H
+#ifndef TECHPROJECT_VIEW_H
+#define TECHPROJECT_VIEW_H
 
 #include <cppconn/driver.h>
 #include <cppconn/exception.h>
@@ -8,32 +8,30 @@
 #include <cppconn/connection.h>
 #include <cppconn/prepared_statement.h>
 #include <boost/beast.hpp>
+#include <nlohmann/json.hpp>
 #include <utility>
-#include <memory>
 #include "json.hpp"
 #include "ResponseCreater.h"
 
 namespace http = boost::beast::http;
 using json=nlohmann::json;
-
 // template <class Body, class Allocator>
 class View {
-public:
-    std::shared_ptr<sql::Connection> conn;
-    http::request<http::string_body> req;
-    int userId;
+ protected:
+  std::shared_ptr<sql::Connection> conn;
+  http::request<http::string_body> req;
+  int userId;
+  http::response<http::string_body> defaultPlug();
 
-    View(http::request<http::string_body> _req,
-         std::shared_ptr<sql::Connection> _conn, int userId) : req(_req), conn(_conn), userId(userId) {};
+ public:
+  View(http::request<http::string_body> _req,
+       std::shared_ptr<sql::Connection> _conn, int _userId);
 
-    virtual http::response<http::string_body> get() = 0;
-
-    virtual http::response<http::string_body> post() = 0;
-
-    virtual http::response<http::string_body> delete_() = 0;
-
-    virtual http::response<http::string_body> put() = 0;
-
+  virtual http::response<http::string_body> get() = 0;
+  virtual http::response<http::string_body> post() = 0;
+  virtual http::response<http::string_body> delete_() = 0;
+  virtual http::response<http::string_body> put() = 0;
+  
     json exception_handler(sql::SQLException &e) {
         std::map<std::string, std::string> error_map;
         std::string str = e.what();
@@ -65,9 +63,7 @@ public:
             return true;
         else return false;
     }
-
-    virtual ~View() = default;
+  virtual ~View() = default;
 };
 
-
-#endif //PLUS_PROJECT_VIEW_H
+#endif  // TECHPROJECT_VIEW_H
