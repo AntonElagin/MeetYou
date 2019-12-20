@@ -16,9 +16,9 @@ http::response<http::string_body> ViewEventFollow::get() {
   std::unique_ptr<sql::ResultSet> followers(userStmt->executeQuery());
   while (followers->next()) {
     respBody["followers"] += {
-        {"name", followers->getString(1)},
-        {"type", followers->getString(2)},
-        {"date", followers->getString(3)},
+        {"name",     followers->getString(1)},
+        {"type",     followers->getString(2)},
+        {"date",     followers->getString(3)},
         {"event_id", followers->getString(4)},
     };
   }
@@ -57,8 +57,7 @@ http::response<http::string_body> ViewEventFollow::post() {
     }
     return templateReturn(400, "Invalid event_id");
   }
-  return templateReturn(400, "Invalid data");
-  ;
+  return templateReturn(400, "Invalid data");;
 }
 
 http::response<http::string_body> ViewEventFollow::delete_() {

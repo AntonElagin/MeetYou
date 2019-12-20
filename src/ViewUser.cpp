@@ -50,9 +50,9 @@ http::response<http::string_body> ViewUser::get() {
       res.set(http::field::content_length, respString.length());
       return res;
     }
-    return templateReturn(204, "No user or data");
+    return templateReturn(204, "User is not found");
   }
-  return templateReturn(400, "Invalid data");
+  return templateReturn(400, "Invalid params or params count");
 }
 
 http::response<http::string_body> ViewUser::post() {

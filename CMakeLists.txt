@@ -16,14 +16,15 @@ set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 
 
-#set(BOOST_INCLUDEDIR "/home/anton/apps/boost_1_71_0")
-#set(BOOST_LIBRARYDIR "/home/anton/apps/boost_1_71_0/stage/lib")
+set(BOOST_INCLUDEDIR "/home/anton/apps/boost_1_71_0")
+set(BOOST_LIBRARYDIR "/home/anton/apps/boost_1_71_0/stage/lib")
 set(Boost_NO_SYSTEM_PATHS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 set(BOOST_ALL_DYN_LINK OFF)
-set(nlohmann_json_DIR "/home/andrey/CLionProjects/json")
+#set(nlohmann_json_DIR "/home/andrey/CLionProjects/json")
+set(nlohmann_json_DIR "/home/anton/apps/json")
 include_directories(include)
 
 set(ALL_SOURCES
@@ -50,8 +51,8 @@ set(ALL_SOURCES
         ${SRC_DIR}/MessageChatView.cpp
         ${SRC_DIR}/UserChatView.cpp
         ${SRC_DIR}/SharedState.cpp
+        ${SRC_DIR}/ViewUserFolList.cpp)
 
-        )
 
 set(ALL_HEADERS
         ${INC_DIR}/Router.h
@@ -79,10 +80,12 @@ set(ALL_HEADERS
         ${INC_DIR}/ViewUserHobby.h
         ${INC_DIR}/ViewEventHobby.h
         ${INC_DIR}/ViewFindEvent.h
+        ${INC_DIR}/ViewUserFolList.h
         ${INC_DIR}/CommonChatView.h
         ${INC_DIR}/MessageChatView.h
         ${INC_DIR}/UserChatView.h
         ${INC_DIR}/SharedState.h)
+
 
 set(TEST_FILES
         #        ${TEST_DIR}/tests.cpp
