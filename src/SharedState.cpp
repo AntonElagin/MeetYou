@@ -3,20 +3,19 @@
 
 
 SharedState::
-SharedState(std::string doc_root)
-        : doc_root_(std::move(doc_root)) {
+SharedState(){
 }
 
 void
 SharedState::
-join(websocket_session *session, int chatid) {
+join(WebsocketSession *session, int chatid) {
     std::lock_guard<std::mutex> lock(mutex_);
     sessions_[chatid].insert(session);
 }
 
 void
 SharedState::
-leave(websocket_session *session, int chatid) {
+leave(WebsocketSession *session, int chatid) {
     std::lock_guard<std::mutex> lock(mutex_);
     sessions_[chatid].erase(session);
 }
@@ -28,7 +27,7 @@ void SharedState::send(std::string message, int chatid) {
     // Make a local list of all the weak pointers representing
     // the sessions, so we can do the actual sending without
     // holding the mutex:
-    std::vector<boost::weak_ptr<websocket_session>> v;
+    std::vector<boost::weak_ptr<WebsocketSession>> v;
     {
         std::lock_guard<std::mutex> lock(mutex_);
         v.reserve(sessions_[chatid].size());

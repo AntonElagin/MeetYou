@@ -5,8 +5,8 @@
 #include "Router.h"
 #include "mysql_driver.h"
 
-HttpSession::HttpSession(tcp::socket &&socket)
-    : stream(std::move(socket)), queue(*this) {
+HttpSession::HttpSession(tcp::socket &&socket,boost::shared_ptr<SharedState> const &_state)
+    : stream(std::move(socket)), queue(*this),state(_state) {
 
 }
 
@@ -71,7 +71,7 @@ void HttpSession::onRead(beast::error_code ec, std::size_t bytes_transferred) {
     if (res->next()) {
       ///нет проверки валидности запроса(без куки упадет все)
       // of both the socket and the HTTP request.
-      boost::make_shared<WebsocketSession>(stream.release_socket(), state_, conn,
+      boost::make_shared<WebsocketSession>(stream.release_socket(), state, conn,
                                            chatid, user)->run(parser->release());
     } else {
       std::cerr << "error with data" << std::endl;

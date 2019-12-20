@@ -26,11 +26,11 @@ class HttpSession : public std::enable_shared_from_this<HttpSession>,
   // The parser is stored in an optional container so we can
   // construct it from scratch it at the beginning of each new message.
   boost::optional<http::request_parser<http::string_body>> parser;
-  std::shared_ptr<SharedState> state;
+  boost::shared_ptr<SharedState> state;
 
  public:
   // Получаем сокет
-  explicit HttpSession(tcp::socket&& socket);
+  explicit HttpSession(tcp::socket&& socket,boost::shared_ptr<SharedState> const&);
   beast::tcp_stream& getStream();
   void run() override;
 

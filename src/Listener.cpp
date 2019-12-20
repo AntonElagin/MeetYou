@@ -1,7 +1,7 @@
 #include "Listener.h"
 #include "Fail.h"
 
-Listener::Listener(net::io_context &_ioc, tcp::endpoint _endpoint)
+Listener::Listener(net::io_context &_ioc, tcp::endpoint _endpoint,boost::shared_ptr<SharedState> const &_state)
     : ioc(_ioc),
       acceptor(net::make_strand(_ioc))
 
@@ -49,7 +49,7 @@ void Listener::onAccept(beast::error_code ec, tcp::socket socket) {
     fail(ec, "accept");
   } else {
     // Создаем сеанс http и запусткаем его
-    std::make_shared<HttpSession>(std::move(socket))->run();
+    std::make_shared<HttpSession>(std::move(socket),state)->run();
   }
   // Принять другое соединение
   doAccept();

@@ -18,9 +18,9 @@ using tcp = boost::asio::ip::tcp;
 class Listener : public std::enable_shared_from_this<Listener>, IListener {
   net::io_context &ioc;
   tcp::acceptor acceptor;
-
+  boost::shared_ptr<SharedState> state;
  public:
-  Listener(net::io_context &_ioc, tcp::endpoint _endpoint);
+  Listener(net::io_context &_ioc, tcp::endpoint _endpoint, boost::shared_ptr<SharedState> const &_state);
 
   void run() override;
 

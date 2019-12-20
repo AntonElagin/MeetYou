@@ -14,7 +14,6 @@ class WebsocketSession;
 
 // Represents the shared server state
 class SharedState {
-    std::string const doc_root_;
     // This mutex synchronizes all access to sessions_
     std::mutex mutex_;
     // Keep a list of all the connected clients
@@ -22,12 +21,7 @@ class SharedState {
 
 public:
     explicit
-    SharedState(std::string doc_root);
-
-    std::string const &
-    doc_root() const noexcept {
-        return doc_root_;
-    }
+    SharedState();
 
     void join(WebsocketSession *session, int chatid);
 
