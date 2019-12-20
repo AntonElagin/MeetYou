@@ -1,13 +1,7 @@
+
 cmake_minimum_required(VERSION 3.10)
 project(techProject)
 
-# флаги
-set(CMAKE_CXX_FLAGS "-O0 -fprofile-arcs -ftest-coverage")
-set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
-SET(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
-SET(CMAKE_C_FLAGS "-g -O0 -Wall -W -fprofile-arcs -ftest-coverage")
-SET(CMAKE_EXE_LINKER_FLAGS "-fprofile-arcs -ftest-coverage")
-#
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -17,8 +11,6 @@ set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 
 
-set(BOOST_INCLUDEDIR "/home/anton/apps/boost_1_71_0")
-set(BOOST_LIBRARYDIR "/home/anton/apps/boost_1_71_0/stage/lib")
 set(Boost_NO_SYSTEM_PATHS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_LIBS ON)
@@ -102,7 +94,6 @@ target_link_libraries(runServer ${Boost_LIBRARIES} pthread
         nlohmann_json::nlohmann_json)
 
 
-set(GTest_DIR "/home/anton/apps/googletest")
 find_package(GTest REQUIRED)
 
 include_directories(${GTEST_INCLUDE_DIRS})
@@ -132,3 +123,7 @@ set(SOURCE nlohmann/json.hpp
 #add_executable(Test )
 #target_include_directories(Test PUBLIC ${GTEST_INCLUDE_DIRS})
 #target_link_libraries(Test PUBLIC ${GTEST_LIBRARIES} pthread)
+find_package(Threads REQUIRED)
+include_directories(include)
+include_directories(nlohmann)
+
