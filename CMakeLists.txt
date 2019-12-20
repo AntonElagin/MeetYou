@@ -1,11 +1,20 @@
 cmake_minimum_required(VERSION 3.10)
 project(techProject)
 
+# флаги
+set(CMAKE_CXX_FLAGS "-O0 -fprofile-arcs -ftest-coverage")
+set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
+SET(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
+SET(CMAKE_C_FLAGS "-g -O0 -Wall -W -fprofile-arcs -ftest-coverage")
+SET(CMAKE_EXE_LINKER_FLAGS "-fprofile-arcs -ftest-coverage")
+#
+
 set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 set(INC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
+set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 
 
 set(BOOST_INCLUDEDIR "/home/anton/apps/boost_1_71_0")
@@ -31,7 +40,12 @@ set(ALL_SOURCES
         ${SRC_DIR}/Runner.cpp
         ${SRC_DIR}/Queue.cpp
         ${SRC_DIR}/ViewOther.cpp
-        ${SRC_DIR}/ViewUser.cpp)
+        ${SRC_DIR}/ViewUser.cpp
+        ${SRC_DIR}/ViewEvent.cpp
+        ${SRC_DIR}/ViewEventFollow.cpp
+        ${SRC_DIR}/ViewUserFollow.cpp
+        ${SRC_DIR}/ViewUserHobby.cpp src/ViewEventHobby.cpp src/ViewFindEvent.cpp)
+
 set(ALL_HEADERS
         ${INC_DIR}/Router.h
         ${INC_DIR}/Md5.h
@@ -51,18 +65,28 @@ set(ALL_HEADERS
         ${INC_DIR}/Queue.h
         ${INC_DIR}/Work.h
         ${INC_DIR}/ViewOther.h
-        ${INC_DIR}/ViewUser.h)
+        ${INC_DIR}/ViewUser.h
+        ${INC_DIR}/ViewEvent.h
+        ${INC_DIR}/ViewEventFollow.h
+        ${INC_DIR}/ViewUserFollow.h
+        ${INC_DIR}/ViewUserHobby.h include/ViewEventHobby.h include/ViewFindEvent.h)
 
+set(TEST_FILES
+        #        ${TEST_DIR}/tests.cpp
+        ${TEST_DIR}/testViewEvent.cpp
+        ${TEST_DIR}/testViewReg.cpp
+        ${TEST_DIR}/testViewUser.cpp
+        ${TEST_DIR}/testViewEventFollow.cpp tests/testViewUserFollow.cpp tests/testViewUserHobby.cpp tests/testViewEventHobby.cpp)
 
-find_package (Boost REQUIRED COMPONENTS system filesystem)
+find_package(Boost COMPONENTS system filesystem date_time REQUIRED)
 if (Boost_FOUND)
-    include_directories (SYSTEM ${Boost_INCLUDE_DIR})
+    include_directories(SYSTEM ${Boost_INCLUDE_DIR})
 endif ()
 
-find_package (nlohmann_json REQUIRED )
+find_package(nlohmann_json REQUIRED)
 if (nlohmann_json_FOUND)
-    include_directories (SYSTEM ${nlohmann_json_INCLUDE_DIR})
-else()
+    include_directories(SYSTEM ${nlohmann_json_INCLUDE_DIR})
+else ()
     message("error")
 endif ()
 
@@ -78,16 +102,15 @@ target_link_libraries(runServer ${Boost_LIBRARIES} pthread
         nlohmann_json::nlohmann_json)
 
 
-set (GTest_DIR "/home/anton/apps/googletest")
-find_package(GTest REQUIRED )
+set(GTest_DIR "/home/anton/apps/googletest")
+find_package(GTest REQUIRED)
+
 include_directories(${GTEST_INCLUDE_DIRS})
 
 include_directories(SYSTEM ${GMOCK_DIR}/include ${GMOCK_DIR}/gtest/include)
 # Link runTests with what we want to test and the GTest and pthread library
 add_executable(runTests tests/gtest_main.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/gmock/GHttpSession.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/testViewReg.cpp
-        ${ALL_SOURCES} ${ALL_HEADERS})
+        ${ALL_SOURCES} ${ALL_HEADERS} ${TEST_FILES})
 #
 target_link_libraries(runTests
         ${GTEST_LIBRARIES} pthread
@@ -99,4 +122,3 @@ target_link_libraries(runTests
         ${LIBMYSQLCLIENT_LIBRARIES}
         ${nlohmann_json}
         nlohmann_json::nlohmann_json
-)

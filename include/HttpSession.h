@@ -18,28 +18,6 @@ using tcp = boost::asio::ip::tcp;
 // Обрабатывает соединение HTTP-сервера
 class HttpSession : public std::enable_shared_from_this<HttpSession>,
                     public IHttpSession {
-  //  // Эта очередь используется для конвейерной передачи HTTP.
-  //  class queue {
-  //    enum {
-  //      // Максимальное количество ответов, которые мы будем ставить в очередь
-  //      limit = 8
-  //    };
-  //
-  //    HttpSession &self;
-  //    std::vector<std::unique_ptr<Work>> items;
-  //
-  //   public:
-  //    explicit queue(HttpSession &_self);
-  //    queue();
-  //    bool is_full() const;
-  //
-  //    bool on_write();
-  //
-  //    // Вызывается обработчиком HTTP для отправки ответа.
-  //    template <bool isRequest, class Body, class Fields>
-  //    void operator()(http::message<isRequest, Body, Fields> &&msg_);
-  //  };
-
   beast::tcp_stream stream;
   beast::flat_buffer buffer;
   Queue<HttpSession> queue;

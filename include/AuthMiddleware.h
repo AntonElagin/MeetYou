@@ -14,11 +14,13 @@ class AuthMiddleware : public IAuthMiddleware {
  public:
   AuthMiddleware(
       std::shared_ptr<sql::Connection> _conn,
-      const boost::beast::http::request<boost::beast::http::string_body> &_req);
+      boost::beast::http::request<boost::beast::http::string_body> _req,
+      const std::string &_ip);
   bool isAuth() override;
   int getUserId();
 
  private:
+  const std::string &ip;
   int authUser;
   boost::beast::http::request<boost::beast::http::string_body> req;
   std::shared_ptr<sql::Connection> conn;

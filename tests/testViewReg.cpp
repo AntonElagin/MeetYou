@@ -1,17 +1,13 @@
-//#include "gmock/http_session.h"
+#include <Md5.h>
 #include <cppconn/connection.h>
 #include <cppconn/driver.h>
-#include <cppconn/resultset.h>
-#include <cppconn/statement.h>
 #include <gtest/gtest.h>
 #include <boost/asio.hpp>
 #include <nlohmann/json.hpp>
 #include "ViewOther.h"
 #include "ViewRegistration.h"
-#include "gmock/GHttpSession.h"
-#include "gmock/Gistener.h"
 
-class ViewTest : public testing::Test {
+class ViewRegTest : public testing::Test {
  protected:
   void SetUp() override {
     req.version(11);
@@ -22,22 +18,35 @@ class ViewTest : public testing::Test {
     std::shared_ptr<sql::Connection> conn(
         driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
     con = conn;
-    con->setSchema("MeetYou");
-    req.target("/auth");
+    con->setSchema("MeetYouTest");
+    std::unique_ptr<sql::PreparedStatement> Stmt1(con->prepareStatement(
+        "Delete From user Where login = \"Cheburashka\""));
+    Stmt1->executeQuery();
+    std::unique_ptr<sql::PreparedStatement> Stmt2(con->prepareStatement(
+        "Delete From user Where email = \"email@email.ru\""));
+    Stmt2->executeQuery();
+    std::unique_ptr<sql::PreparedStatement> Stmt(
+        con->prepareStatement("Insert into user(login, password, email) Values "
+                              "(\"login12\", ?, \"email@email.ru\");"));
+    Stmt->setString(1, md5("qwerty1234"));
+    Stmt->executeQuery();
   }
 
   void TearDown() override {
-    std::unique_ptr<sql::Statement> st(con->createStatement());
-    //    st->executeQuery("Delete from user where login = 'Cheburashka';");
-    st->execute("Delete from user where login = 'Cheburashka';");
+    std::unique_ptr<sql::PreparedStatement> Stmt(con->prepareStatement(
+        "Delete From user Where login = \"Cheburashka\""));
+    std::unique_ptr<sql::PreparedStatement> Stmt2(
+        con->prepareStatement("Delete From user Where login = \"login12\""));
+    Stmt->executeQuery();
+    Stmt2->executeQuery();
   }
 
-  sql::Driver *driver;
+  sql::Driver *driver{};
   std::shared_ptr<sql::Connection> con;
   http::request<http::string_body> req;
 };
 
-TEST_F(ViewTest, Registeration) {
+TEST_F(ViewRegTest, Registeration) {
   nlohmann::json body;
   body["login"] = "Cheburashka";
   body["password"] = "Henna02";
@@ -45,13 +54,116 @@ TEST_F(ViewTest, Registeration) {
   std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewRegistration view(req, con, -1);
+  ViewRegistration view(req, con, -1, "8.128.10.1");
   std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
   ASSERT_EQ(body["message"], "OK");
 }
 
-TEST_F(ViewTest, badRegisteration) {
+TEST_F(ViewRegTest, duplicateRegisteration1) {
+  nlohmann::json body;
+  body["login"] = "login12";
+  body["password"] = "Henna02";
+  body["email"] = "email@mawel.ru";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewRegistration view(req, con, -1, "8.128.10.1");
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Duplicate login");
+}
+
+TEST_F(ViewRegTest, duplicateRegisteration2) {
+  nlohmann::json body;
+  body["login"] = "login12187y";
+  body["password"] = "Henna02";
+  body["email"] = "email@email.ru";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewRegistration view(req, con, -1, "8.128.10.1");
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Duplicate email");
+}
+
+TEST_F(ViewRegTest, duplicateRegisteration3) {
+  nlohmann::json body;
+  body["login"] = "login12";
+  body["password"] = "Henna02";
+  body["email"] = "email@email.ru";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewRegistration view(req, con, -1, "8.128.10.1");
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "Duplicate login and email");
+}
+
+TEST_F(ViewRegTest, badRegisterationJSON) {
+  nlohmann::json body;
+  std::string str = "{ \"ds\": 34";
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewRegistration view(req, con, -1, "8.128.10.1");
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["message"], "JSON error");
+}
+
+TEST_F(ViewRegTest, badLoginJSON) {
+  nlohmann::json body;
+  std::string str = "{ \"ds\": 34";
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewRegistration view(req, con, -1, "8.128.10.1");
+  std::string respBody = view.get().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["status"], 400);
+}
+
+TEST_F(ViewRegTest, badLogin) {
+  nlohmann::json body;
+  body["email"] = "login12";
+  body["password"] = "qwerty1234";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewRegistration view(req, con, -1, "8.128.10.1");
+  std::string respBody = view.get().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["status"], 400);
+}
+
+TEST_F(ViewRegTest, LoginWithLogin) {
+  nlohmann::json body;
+  body["login"] = "login12";
+  body["password"] = "qwerty1234";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewRegistration view(req, con, -1, "8.128.10.1");
+  std::string respBody = view.get().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["status"], 200);
+}
+
+TEST_F(ViewRegTest, LoginWithEmail) {
+  nlohmann::json body;
+  body["login"] = "email@email.ru";
+  body["password"] = "qwerty1234";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewRegistration view(req, con, -1, "8.128.10.1");
+  std::string respBody = view.get().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["status"], 200);
+}
+
+TEST_F(ViewRegTest, badParamReg) {
   nlohmann::json body;
   body["logi"] = "Cheburashka";
   body["password"] = "Henna02";
@@ -59,13 +171,41 @@ TEST_F(ViewTest, badRegisteration) {
   std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewRegistration view(req, con, -1);
+  ViewRegistration view(req, con, -1, "8.128.10.1");
   std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
-  ASSERT_EQ(body["message"], "JSON error");
+  ASSERT_EQ(body["status"], 400);
 }
 
-TEST_F(ViewTest, badEmailRegisteration) {
+TEST_F(ViewRegTest, badParamsReg) {
+  nlohmann::json body;
+  body["login"] = "Cheburashka";
+  body["passwor"] = "Henna02";
+  body["email"] = "hepoklak@zlo.me";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewRegistration view(req, con, -1, "8.128.10.1");
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["status"], 400);
+}
+
+TEST_F(ViewRegTest, badParamsReg2) {
+  nlohmann::json body;
+  body["login"] = "Cheburashka";
+  body["password"] = "Henna02";
+  body["emai"] = "hepoklak@zlo.me";
+  std::string str = body.dump();
+  req.body() = str;
+  req.set(http::field::content_length, str.length());
+  ViewRegistration view(req, con, -1, "8.128.10.1");
+  std::string respBody = view.post().body();
+  body = nlohmann::json::parse(respBody);
+  ASSERT_EQ(body["status"], 400);
+}
+
+TEST_F(ViewRegTest, badEmailRegisteration) {
   nlohmann::json body;
   body["login"] = "Cheburashka";
   body["password"] = "Henna02";
@@ -73,13 +213,13 @@ TEST_F(ViewTest, badEmailRegisteration) {
   std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewRegistration view(req, con, -1);
+  ViewRegistration view(req, con, -1, "8.128.10.1");
   std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
-  ASSERT_EQ(body["email_message"], "Invalid");
+  ASSERT_EQ(body["status"], 400);
 }
 
-TEST_F(ViewTest, badLoginRegisteration) {
+TEST_F(ViewRegTest, badLoginRegisteration) {
   nlohmann::json body;
   body["login"] = "Ch";
   body["password"] = "Henna02";
@@ -87,12 +227,13 @@ TEST_F(ViewTest, badLoginRegisteration) {
   std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewRegistration view(req, con, -1);
+  ViewRegistration view(req, con, -1, "8.128.10.1");
   std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
-  ASSERT_EQ(body["login_message"], "Invalid");
+  ASSERT_EQ(body["message"], "Invalid login");
 }
-TEST_F(ViewTest, badPasswordRegisteration) {
+
+TEST_F(ViewRegTest, badPasswordRegisteration) {
   nlohmann::json body;
   body["login"] = "Cheburashka";
   body["password"] = "He";
@@ -100,8 +241,8 @@ TEST_F(ViewTest, badPasswordRegisteration) {
   std::string str = body.dump();
   req.body() = str;
   req.set(http::field::content_length, str.length());
-  ViewRegistration view(req, con, -1);
+  ViewRegistration view(req, con, -1, "8.128.10.1");
   std::string respBody = view.post().body();
   body = nlohmann::json::parse(respBody);
-  ASSERT_EQ(body["password_message"], "Invalid");
+  ASSERT_EQ(body["message"], "Invalid password");
 }
