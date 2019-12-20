@@ -13,7 +13,7 @@
 class websocket_session;
 
 // Represents the shared server state
-class shared_state {
+class SharedState {
     std::string const doc_root_;
     // This mutex synchronizes all access to sessions_
     std::mutex mutex_;
@@ -22,7 +22,7 @@ class shared_state {
 
 public:
     explicit
-    shared_state(std::string doc_root);
+    SharedState(std::string doc_root);
 
     std::string const &
     doc_root() const noexcept {

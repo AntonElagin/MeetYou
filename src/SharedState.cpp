@@ -1,28 +1,28 @@
-#include "shared_state.hpp"
-#include "websocket_session.hpp"
+#include "SharedState.hpp"
+#include "WebsocketSession.h"
 
 
-shared_state::
-shared_state(std::string doc_root)
+SharedState::
+SharedState(std::string doc_root)
         : doc_root_(std::move(doc_root)) {
 }
 
 void
-shared_state::
+SharedState::
 join(websocket_session *session, int chatid) {
     std::lock_guard<std::mutex> lock(mutex_);
     sessions_[chatid].insert(session);
 }
 
 void
-shared_state::
+SharedState::
 leave(websocket_session *session, int chatid) {
     std::lock_guard<std::mutex> lock(mutex_);
     sessions_[chatid].erase(session);
 }
 
 // Broadcast a message to all websocket client sessions
-void shared_state::send(std::string message, int chatid) {
+void SharedState::send(std::string message, int chatid) {
     // Put the message in a shared pointer so we can re-use it for each client
     auto const ss = boost::make_shared<std::string const>(std::move(message));
     // Make a local list of all the weak pointers representing

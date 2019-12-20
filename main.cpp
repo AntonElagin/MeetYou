@@ -1,5 +1,5 @@
-#include "listener.hpp"
-#include "shared_state.hpp"
+#include "Listener.h"
+#include "SharedState.hpp"
 
 #include <boost/asio/signal_set.hpp>
 #include <boost/smart_ptr.hpp>
@@ -25,8 +25,8 @@ main(int argc, char *argv[]) {
     net::io_context ioc;
 
     // Create and launch a listening port
-    boost::make_shared<listener>(ioc, tcp::endpoint{address, port},
-                                 boost::make_shared<shared_state>(doc_root))->run();
+    boost::make_shared<Listener>(ioc, tcp::endpoint{address, port},
+                                 boost::make_shared<SharedState>(doc_root))->run();
 
 ///сделали и связали слушающий порт , книули ему ендпоинт +корень
     // Capture SIGINT and SIGTERM to perform a clean shutdown
