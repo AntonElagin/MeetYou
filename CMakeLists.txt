@@ -47,8 +47,12 @@ set(ALL_SOURCES
         ${SRC_DIR}/ViewUserHobby.cpp
         ${SRC_DIR}/ViewEventHobby.cpp
         ${SRC_DIR}/ViewFindEvent.cpp
+        ${SRC_DIR}/CommonChatView.cpp
+        ${SRC_DIR}/MessageChatView.cpp
+        ${SRC_DIR}/UserChatView.cpp
         ${SRC_DIR}/SharedState.cpp
-        src/ViewUserFolList.cpp)
+        ${SRC_DIR}/ViewUserFolList.cpp)
+
 
 set(ALL_HEADERS
         ${INC_DIR}/Router.h
@@ -76,7 +80,12 @@ set(ALL_HEADERS
         ${INC_DIR}/ViewUserHobby.h
         ${INC_DIR}/ViewEventHobby.h
         ${INC_DIR}/ViewFindEvent.h
-        ${INC_DIR}/SharedState.hpp include/ViewUserFolList.h)
+        ${INC_DIR}/ViewUserFolList.h
+        ${INC_DIR}/CommonChatView.h
+        ${INC_DIR}/MessageChatView.h
+        ${INC_DIR}/UserChatView.h
+        ${INC_DIR}/SharedState.h)
+
 
 set(TEST_FILES
         #        ${TEST_DIR}/tests.cpp
@@ -111,6 +120,7 @@ target_link_libraries(runServer ${Boost_LIBRARIES} pthread
 
 set(GTest_DIR "/home/anton/apps/googletest")
 find_package(GTest REQUIRED)
+
 
 include_directories(${GTEST_INCLUDE_DIRS})
 

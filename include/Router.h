@@ -8,6 +8,7 @@
 #include <set>
 #include <unordered_map>
 #include <utility>
+#include <regex>
 #include "AuthMiddleware.h"
 #include "View.h"
 #include "ViewEvent.h"
@@ -19,7 +20,9 @@
 #include "ViewUser.h"
 #include "ViewUserFollow.h"
 #include "ViewUserHobby.h"
-
+#include "CommonChatView.h"
+#include "MessageChatView.h"
+#include "UserChatView.h"
 namespace http = boost::beast::http;
 
 class Router {

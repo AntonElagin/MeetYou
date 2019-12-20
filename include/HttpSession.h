@@ -7,7 +7,7 @@
 #include "Queue.h"
 #include "ViewRegistration.h"
 #include "WebsocketSession.h"
-#include "SharedState.hpp"
+#include "SharedState.h"
 #include "Work.h"
 #include "Fail.h"
 

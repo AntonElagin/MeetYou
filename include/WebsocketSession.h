@@ -1,7 +1,7 @@
 #ifndef BOOST_BEAST_EXAMPLE_WEBSOCKET_CHAT_MULTI_WEBSOCKET_SESSION_HPP
 #define BOOST_BEAST_EXAMPLE_WEBSOCKET_CHAT_MULTI_WEBSOCKET_SESSION_HPP
 
-#include "SharedState.hpp"
+#include "SharedState.h"
 #include <boost/asio.hpp>
 #include <cstdlib>
 #include <memory>
