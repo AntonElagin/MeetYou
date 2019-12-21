@@ -45,7 +45,13 @@ http::response<http::string_body> ViewChatCommon::post() {
             body["message"] = "chat created";
             ResponseCreator resp(body, 0);
             return resp.get_resp();
+        } else{
+            json body;
+            body["message"]="invalid json";
+            ResponseCreator resp(body, 1);
+            return resp.get_resp();
         }
+
     }
     catch (sql::SQLException &e) {
         json body(exception_handler(e));
@@ -103,7 +109,7 @@ json ViewChatCommon::history(const int chatid, int &error) {
     }
     try {
         std::unique_ptr<sql::PreparedStatement> stmt(conn->prepareStatement(
-                "select username nick,body,publication_date pubdate from Message, User where chat_id = ? and author_id = User.id order by publication_date asc;"));
+                "select login nick,body,publication_date pubdate from message, user where chat_id = ? and author_id = user.id order by publication_date asc;"));
         stmt->setInt(1, chatid);
         std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
         std::string text;
@@ -190,7 +196,7 @@ json ViewChatCommon::members_list(const int chatid, int &error) {
     }
     try {
         std::unique_ptr<sql::PreparedStatement> stmt(conn->prepareStatement(
-                "select user_id id, username nick from result_table, User where user_id=User.id and chat_id=?"));
+                "select user_id id, login nick from result_table, user where user_id=user.id and chat_id=?"));
         stmt->setInt(1, chatid);
         std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
         std::map<int, std::string> id_nick_array;

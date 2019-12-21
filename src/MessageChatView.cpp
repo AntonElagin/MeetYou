@@ -15,7 +15,7 @@ http::response<http::string_body> ViewMessageChat::post() {
         } else
             try {
                 std::unique_ptr<sql::PreparedStatement> stmt(conn->prepareStatement(
-                        "INSERT INTO `Message` (`publication_date`, `body`, `author_id`, "
+                        "INSERT INTO `message` (`publication_date`, `body`, `author_id`, "
                         "`chat_id`) VALUES (NOW(), ?, ?, ?)"));
                 stmt->setString(1, text);
                 stmt->setInt(2, userId);
@@ -46,7 +46,7 @@ http::response<http::string_body> ViewMessageChat::delete_() {
         } else
             try {
                 std::unique_ptr<sql::PreparedStatement> stmt(
-                        conn->prepareStatement("DELETE FROM `Message` WHERE `id` = ?"));
+                        conn->prepareStatement("DELETE FROM `message` WHERE `id` = ?"));
                 stmt->setInt(1, messid);
                 stmt->executeUpdate();
                 body["status"] = "OK";
@@ -110,7 +110,7 @@ http::response<http::string_body> ViewMessageChat::put() {
         } else
             try {
                 std::unique_ptr<sql::PreparedStatement> stmt(conn->prepareStatement(
-                        "UPDATE `Message`  SET `body` = ? WHERE `id` = ?"));
+                        "UPDATE `message`  SET `body` = ? WHERE `id` = ?"));
                 stmt->setString(1, text);
                 stmt->setInt(1, messid);
                 stmt->executeUpdate();
@@ -127,7 +127,7 @@ http::response<http::string_body> ViewMessageChat::put() {
 
 bool ViewMessageChat::permission_owner_check(const int messageid) {
     std::unique_ptr<sql::PreparedStatement> stmt(conn->prepareStatement(
-            "select distinct author_id from Message where id=?"));
+            "select distinct author_id from message where id=?"));
     stmt->setInt(1, messageid);
     stmt->setInt(1, userId);
     std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
