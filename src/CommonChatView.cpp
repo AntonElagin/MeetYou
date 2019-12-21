@@ -7,6 +7,7 @@ http::response<http::string_body> ViewChatCommon::post() {
     try {
         if (j.contains("title") && j.contains("members_list") && j.contains("admin_list")) {
             json jsonik = j.at("members_list");
+            title = j.at("title");
             if (jsonik.is_array()) {
                 for (auto &element : jsonik)
                     members_list.push_back(element);
@@ -21,15 +22,24 @@ http::response<http::string_body> ViewChatCommon::post() {
                 std::unique_ptr<sql::PreparedStatement> chatStmt(conn->prepareStatement(
                         "select id from event where id=?"));///check that exsist event
                 chatStmt->setInt(1, event_id);
+                std::unique_ptr<sql::ResultSet> res(chatStmt->executeQuery());
+                if (!res->next()) {
+                    json body;
+                    body["message"] = "invalid eventid";
+                    ResponseCreator resp(body, 1);
+                    return resp.get_resp();
+                }
+
                 chatStmt.reset(conn->prepareStatement("select admin from event where admin=? and id=?"));
                 chatStmt->setInt(1, userId);
                 chatStmt->setInt(2, event_id);
-                std::unique_ptr<sql::ResultSet> res(chatStmt->executeQuery());
+                res.reset(chatStmt->executeQuery());
                 if (res->next()) {
                     chatStmt.reset(conn->prepareStatement(
                             "insert into chat (id,create_date, title,event_id) values (null,default ,?,? )"));///create chat
                     chatStmt->setString(1, title);
                     chatStmt->setInt(2, event_id);
+                    chatStmt->execute();
                 } else {
                     json body;
                     body["message"] = "invalid eventid";
@@ -44,8 +54,8 @@ http::response<http::string_body> ViewChatCommon::post() {
             }
             std::unique_ptr<sql::PreparedStatement> chatStmt(conn->prepareStatement(
                     "insert into chat (id,create_date, title) values (null,default ,? )"));
-            chatStmt->setString(1, title);
-            chatStmt->executeUpdate();
+//            chatStmt->setString(1, title);
+//            chatStmt->executeUpdate();
             chatStmt.reset(conn->prepareStatement(
                     "select id from chat where title like ? order by create_date desc"));
             chatStmt->setString(1, title);
