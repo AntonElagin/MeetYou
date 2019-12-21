@@ -16,6 +16,32 @@ http::response<http::string_body> ViewChatCommon::post() {
                 for (auto &element : jsonik)
                     admin_list.push_back(element);
             }
+            if (j.contains("event_id")) {
+                int event_id = j.at("event_id");
+                std::unique_ptr<sql::PreparedStatement> chatStmt(conn->prepareStatement(
+                        "select id from event where id=?"));///check that exsist event
+                chatStmt->setInt(1, event_id);
+                chatStmt.reset(conn->prepareStatement("select admin from event where admin=? and id=?"));
+                chatStmt->setInt(1, userId);
+                chatStmt->setInt(2, event_id);
+                std::unique_ptr<sql::ResultSet> res(chatStmt->executeQuery());
+                if (res->next()) {
+                    chatStmt.reset(conn->prepareStatement(
+                            "insert into chat (id,create_date, title,event_id) values (null,default ,?,? )"));///create chat
+                    chatStmt->setString(1, title);
+                    chatStmt->setInt(2, event_id);
+                } else {
+                    json body;
+                    body["message"] = "invalid eventid";
+                    ResponseCreator resp(body, 1);
+                    return resp.get_resp();
+                }
+            } else {
+                std::unique_ptr<sql::PreparedStatement> chatStmt(conn->prepareStatement(
+                        "insert into chat (id,create_date, title,event_id) values (null,default ,? )"));///create chat
+                chatStmt->setString(1, title);
+                chatStmt->execute();
+            }
             std::unique_ptr<sql::PreparedStatement> chatStmt(conn->prepareStatement(
                     "insert into chat (id,create_date, title) values (null,default ,? )"));
             chatStmt->setString(1, title);
@@ -45,9 +71,9 @@ http::response<http::string_body> ViewChatCommon::post() {
             body["message"] = "chat created";
             ResponseCreator resp(body, 0);
             return resp.get_resp();
-        } else{
+        } else {
             json body;
-            body["message"]="invalid json";
+            body["message"] = "invalid json";
             ResponseCreator resp(body, 1);
             return resp.get_resp();
         }
