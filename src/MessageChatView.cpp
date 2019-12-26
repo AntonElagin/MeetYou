@@ -7,6 +7,7 @@ http::response<http::string_body> ViewMessageChat::post() {
     json body;
     std::string text;
     try {
+        if (userId < 0) throw std::invalid_argument("you must be logged");
         if (j.contains("message") && j.contains("chatid")) {
             text = j.at("message");
             chatid = j.at("chatid");
@@ -46,6 +47,7 @@ http::response<http::string_body> ViewMessageChat::delete_() {
     int messid, chatid;
     json body;
     try {
+        if (userId < 0) throw std::invalid_argument("you must be logged");
         if (j.contains("messid") && j.contains("chatid")) {
             messid = j.at("messid");
             chatid = j.at("chatid");
@@ -82,6 +84,7 @@ http::response<http::string_body> ViewMessageChat::get() {
     int author_id = -1;
     int messid;
     try {
+        if (userId < 0) throw std::invalid_argument("you must be logged");
         if (j.contains("messid")) {
             messid = j.at("messid");
             if (not permission_member_check(chatid)) {
@@ -121,6 +124,7 @@ http::response<http::string_body> ViewMessageChat::put() {
     std::string text;
     json body;
     try {
+        if (userId < 0) throw std::invalid_argument("you must be logged");
         if (j.contains("message") && j.contains("chatid") && j.contains("messid")) {
             messid = j.at("messid");
             chatid = j.at("chatid");

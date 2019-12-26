@@ -5,6 +5,7 @@ http::response<http::string_body> ViewChatCommon::post() {
     std::string title;
     std::vector<int> members_list, admin_list;
     try {
+        if (userId < 0) throw std::invalid_argument("you must be logged");
         if (j.contains("title") && j.contains("members_list") && j.contains("admin_list")) {
             json jsonik = j.at("members_list");
             title = j.at("title");
@@ -26,7 +27,7 @@ http::response<http::string_body> ViewChatCommon::post() {
                 chatStmt->setInt(1, event_id);
                 res.reset(chatStmt->executeQuery());
                 if (!res->next())
-                    throw "not found this event";
+                    throw std::invalid_argument("not found this event");
                 chatStmt.reset(conn->prepareStatement(
                         "select admin from event where admin=? and id=?"));///проверяем что есть права админа
                 chatStmt->setInt(1, userId);
@@ -39,7 +40,7 @@ http::response<http::string_body> ViewChatCommon::post() {
                     chatStmt->setInt(2, event_id);
                     chatStmt->execute();
                 } else {
-                    throw "to create that chat you must to be admin of the event";
+                    throw std::invalid_argument("to create chat you must to be admin of this event");
                 }
             } else {
                 chatStmt.reset(conn->prepareStatement(
@@ -55,7 +56,7 @@ http::response<http::string_body> ViewChatCommon::post() {
             if (res->next())
                 chat_id = res->getInt("id");
             else
-                throw "error with search data into database";
+                throw std::invalid_argument("error with found data in database");
             chatStmt.reset(conn->prepareStatement(
                     "INSERT INTO result_table (`chat_id`, `user_id`, `is_admin`) VALUES (?, ?, 1)"));
             for (auto adminid:admin_list) {
@@ -75,7 +76,7 @@ http::response<http::string_body> ViewChatCommon::post() {
             ResponseCreator resp(body, 0);
             return resp.get_resp();
         } else
-            throw "invalid list of arguments";
+            throw std::invalid_argument("invalid list of arguments");
     }
     catch (sql::SQLException &e) {
         json body(exception_handler(e));
@@ -110,26 +111,34 @@ http::response<http::string_body> ViewChatCommon::get() {
     int chatid;
     int error = 0;
     std::string search_data;
-    if (j.contains("chatid") && j.contains("search_data")) {
-        json jsonik = j.at("chatid");
-        chatikid = j.at("chatid");
-        chatid = std::stoi(chatikid);
-        jsonik = j.at("search_data");
-        if (jsonik.is_string())
-            search_data = j.at("search_data");
-        if (search_data == "history")
-            res_body = history(chatid, error);
-        else if (search_data == "members_count")
-            res_body = members_count(chatid, error);
-        else if (search_data == "members_list")
-            res_body = members_list(chatid, error);
-        else {
-            res_body = {"message", "incorrect url"};
-            error = 1;
-        }
-        ResponseCreator resp(res_body, error);
+    try {
+        if (j.contains("chatid") && j.contains("search_data")) {
+            json jsonik = j.at("chatid");
+            chatikid = j.at("chatid");
+            chatid = std::stoi(chatikid);
+            jsonik = j.at("search_data");
+            if (jsonik.is_string())
+                search_data = j.at("search_data");
+            if (search_data == "history")
+                res_body = history(chatid, error);
+            else if (search_data == "members_count")
+                res_body = members_count(chatid, error);
+            else if (search_data == "members_list")
+                res_body = members_list(chatid, error);
+            else {
+                res_body = {"message", "incorrect url"};
+                error = 1;
+            }
+            ResponseCreator resp(res_body, error);
+            return resp.get_resp();
+        } else throw std::invalid_argument("invalid json");
+    }
+    catch (std::exception& e) {
+        res_body = e.what();
+        ResponseCreator resp(res_body, 1);
         return resp.get_resp();
     }
+
 }
 
 json ViewChatCommon::history(const int chatid, int &error) {
