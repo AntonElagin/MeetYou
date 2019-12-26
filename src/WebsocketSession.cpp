@@ -31,14 +31,14 @@ void WebsocketSession::on_accept(beast::error_code ec) {
     std::string text;
     std::string author;
     std::string date;
-    std::string buffer;
-    while (res->next()) {
+    std::string buffer;///если пусто в бд то ничего не вернет
+    while (res->next()) {///load history from db
         text = res->getString("body");
         author = res->getString("nick");
         date = res->getString("pubdate");
         buffer = date + " : " + author + " : " + text;
         auto const ss = boost::make_shared<std::string const>(std::move(buffer));
-        send(ss);
+        send(ss);///вренули текущему юзеру
     }
     state_->join(this, chatid);
     // Read a message
@@ -49,17 +49,18 @@ void WebsocketSession::on_read(beast::error_code ec, std::size_t) {
     // Handle the error, if any
     if (ec) return fail(ec, "read");
     boost::posix_time::ptime timeLocal = boost::posix_time::second_clock::local_time();
-    auto message=beast::buffers_to_string(buffer_.data());
+    auto message = beast::buffers_to_string(buffer_.data());
     auto message_text_ws = boost::posix_time::to_simple_string(timeLocal) + " : " + user.username + " : " +
                            beast::buffers_to_string(buffer_.data());
     // Send to all connections
     std::unique_ptr<sql::PreparedStatement> stmt(conn->prepareStatement(
             "INSERT INTO `MeetYou`.`message` (`publication_date`, `body`, `author_id`, `chat_id`) VALUES (DEFAULT, ?, ?, ?)"));
+    ///пройдет тк id разные у сообщений
     stmt->setString(1, message);
     stmt->setInt(2, user.userid);
     stmt->setInt(3, chatid);
     stmt->executeUpdate();
-    state_->send(message_text_ws, chatid);
+    state_->send(message_text_ws, chatid);///расшарить всем остальным клиентам
     // Clear the buffer
     buffer_.consume(buffer_.size());
     // Read another message

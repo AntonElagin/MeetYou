@@ -40,43 +40,11 @@ public:
 
     virtual http::response<http::string_body> put() = 0;
 
-    json exception_handler(sql::SQLException &e) {
-        std::map<std::string, std::string> error_map;
-        std::string str = e.what();
-        error_map.insert({"err", e.what()});
-        error_map.insert({"MYSQL error code", std::to_string(e.getErrorCode())});
-        error_map.insert({"MYSQL error code", e.getSQLState()});
-        json j(error_map);
-        return j;
-    }
+    json exception_handler(sql::SQLException &e);
 
-    bool permission_member_check(const int chatid) {
-        if (permission_admin_check(chatid))
-            return true;
-        std::unique_ptr<sql::PreparedStatement> stmt(
-                conn->prepareStatement("select distinct chat_id,user_id from "
-                                       "result_table where chat_id=? and user_id=?"));
-        stmt->setInt(1, chatid);
-        stmt->setInt(2, userId);
-        std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
-        if (res->next())
-            return true;
-        else
-            return false;
-    }
+    bool permission_member_check(const int chatid) ;
 
-    bool permission_admin_check(const int chatid) {
-        std::unique_ptr<sql::PreparedStatement> stmt(
-                conn->prepareStatement("select distinct chat_id,user_id,is_admin from "
-                                       "result_table where chat_id=? and user_id=?"));
-        stmt->setInt(1, chatid);
-        stmt->setInt(2, userId);
-        std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
-        if (res->next() && res->getInt(3))
-            return true;
-        else
-            return false;
-    }
+    bool permission_admin_check(const int chatid) ;
 
     virtual ~View() = default;
 };

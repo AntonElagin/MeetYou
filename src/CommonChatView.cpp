@@ -17,20 +17,18 @@ http::response<http::string_body> ViewChatCommon::post() {
                 for (auto &element : jsonik)
                     admin_list.push_back(element);
             }
+            std::unique_ptr<sql::PreparedStatement> chatStmt;
+            std::unique_ptr<sql::ResultSet> res;
             if (j.contains("event_id")) {
                 int event_id = j.at("event_id");
-                std::unique_ptr<sql::PreparedStatement> chatStmt(conn->prepareStatement(
+                chatStmt.reset(conn->prepareStatement(
                         "select id from event where id=?"));///check that exsist event
                 chatStmt->setInt(1, event_id);
-                std::unique_ptr<sql::ResultSet> res(chatStmt->executeQuery());
-                if (!res->next()) {
-                    json body;
-                    body["message"] = "invalid eventid";
-                    ResponseCreator resp(body, 1);
-                    return resp.get_resp();
-                }
-
-                chatStmt.reset(conn->prepareStatement("select admin from event where admin=? and id=?"));
+                res.reset(chatStmt->executeQuery());
+                if (!res->next())
+                    throw "not found this event";
+                chatStmt.reset(conn->prepareStatement(
+                        "select admin from event where admin=? and id=?"));///проверяем что есть права админа
                 chatStmt->setInt(1, userId);
                 chatStmt->setInt(2, event_id);
                 res.reset(chatStmt->executeQuery());
@@ -41,56 +39,54 @@ http::response<http::string_body> ViewChatCommon::post() {
                     chatStmt->setInt(2, event_id);
                     chatStmt->execute();
                 } else {
-                    json body;
-                    body["message"] = "invalid eventid";
-                    ResponseCreator resp(body, 1);
-                    return resp.get_resp();
+                    throw "to create that chat you must to be admin of the event";
                 }
             } else {
+
                 std::unique_ptr<sql::PreparedStatement> chatStmt(conn->prepareStatement(
+
                         "insert into chat (id,create_date, title,event_id) values (null,default ,?,null )"));///create chat
                 chatStmt->setString(1, title);
                 chatStmt->execute();
             }
-            std::unique_ptr<sql::PreparedStatement> chatStmt(conn->prepareStatement(
-                    "insert into chat (id,create_date, title) values (null,default ,? )"));
-//            chatStmt->setString(1, title);
-//            chatStmt->executeUpdate();
             chatStmt.reset(conn->prepareStatement(
                     "select id from chat where title like ? order by create_date desc"));
             chatStmt->setString(1, title);
-            std::unique_ptr<sql::ResultSet> res(chatStmt->executeQuery());
-            int chat_id = -1;
+            res.reset(chatStmt->executeQuery());
+            int chat_id;
             if (res->next())
                 chat_id = res->getInt("id");
-            std::unique_ptr<sql::PreparedStatement> temp_table_Stmt(conn->prepareStatement(
+            else
+                throw "error with search data into database";
+            chatStmt.reset(conn->prepareStatement(
                     "INSERT INTO result_table (`chat_id`, `user_id`, `is_admin`) VALUES (?, ?, 1)"));
             for (auto adminid:admin_list) {
-                temp_table_Stmt->setInt(1, chat_id);
-                temp_table_Stmt->setInt(2, adminid);
-                temp_table_Stmt->execute();
+                chatStmt->setInt(1, chat_id);
+                chatStmt->setInt(2, adminid);
+                chatStmt->execute();
             }
-            temp_table_Stmt.reset(conn->prepareStatement(
+            chatStmt.reset(conn->prepareStatement(
                     "INSERT INTO result_table (`chat_id`, `user_id`, `is_admin`) VALUES (?, ?, 0)"));
             for (auto memberid:members_list) {
-                temp_table_Stmt->setInt(1, chat_id);
-                temp_table_Stmt->setInt(2, memberid);
-                temp_table_Stmt->execute();
+                chatStmt->setInt(1, chat_id);
+                chatStmt->setInt(2, memberid);
+                chatStmt->execute();
             }
             json body;
             body["message"] = "chat created";
             ResponseCreator resp(body, 0);
             return resp.get_resp();
-        } else {
-            json body;
-            body["message"] = "invalid json";
-            ResponseCreator resp(body, 1);
-            return resp.get_resp();
-        }
-
+        } else
+            throw "invalid list of arguments";
     }
     catch (sql::SQLException &e) {
         json body(exception_handler(e));
+        ResponseCreator resp(body, 1);
+        return resp.get_resp();
+    }
+    catch (const char *e) {
+        json body;
+        body["message"] = e;
         ResponseCreator resp(body, 1);
         return resp.get_resp();
     }
