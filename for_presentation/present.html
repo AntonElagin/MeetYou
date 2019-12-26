@@ -48,9 +48,28 @@
         <input class="btn btn-primary" type="button" id="chataddbutton" value="Auth">
     </div>
 </form>
-<label for="userinfo">Info about user enter login or user_id</label>
+<hr>
+Search user for login
 <input type="text" id="userinfo" value="Andrey">
 <button type="button" id="userinfobtn" class="btn btn-success">Send</button>
+<br>
+<label for="eventname">Enter event name</label>
+<input type="text" id="eventname">
+<button type="button" id="eventinfobtn" class="btn btn-success">Send</button>
+<br>
+<form action="/event/hobby">
+    <label for="eventname">Enter event id</label>
+    <input type="text" id="eventid" value="1">
+    <input type="text" id="eventhobby" value='[ "sky", "skate", "sing", "eat" ]'>
+    <button type="button" id="addeventhobbybtn" class="btn btn-success">Add hobby</button>
+    <button type="button" id="deleventhobbybtn" class="btn btn-success">Del hobby</button>
+</form>
+<h3>Search on title and description</h3>
+<form action="/event/find">
+    <label for="eventname">Enter keyword</label>
+    <input type="text" id="eventkey" value='sky'>
+    <button type="button" id="keyfindbtn" class="btn btn-success">Find</button>
+</form>
 <h1> websocket example chat</h1>
 Server URI: <input class="draw-border" id="uri" size="47" value="ws://localhost:8080/chat?id="
                    style="margin-bottom: 5px;">
@@ -83,13 +102,31 @@ Server URI: <input class="draw-border" id="uri" size="47" value="ws://localhost:
                     "login": $("#login").val()
                     , "password": $("#password").val()
                     , "email": $("#email").val()
-
                 };
                 $.ajax({
                     url: 'auth'
                     , type: 'POST'
                     , data: JSON.stringify(formData)
                     , success: function (res) {
+                        alert(res);
+                    }
+                });
+                return false;
+            });
+            ///поиск по ключевому слову
+            $("#keyfindbtn").click(function (e) {
+                e.preventDefault();
+                var formData = {
+                    "key": $("#eventkey").val()
+                };
+                $.ajax({
+                    url: 'event/find',
+                    beforeSend: function (req) {
+                        req.setRequestHeader("method", "GET");
+                    },
+                    type: 'POST',
+                    data: JSON.stringify(formData),
+                    success: function (res) {
                         alert(res);
                     }
                 });
@@ -144,6 +181,7 @@ Server URI: <input class="draw-border" id="uri" size="47" value="ws://localhost:
                 });
                 return false;
             });
+            /// поиск инфы о юзере
             $("#userinfobtn").click(function (e) {
                 e.preventDefault();
                 var formData = {
@@ -155,6 +193,67 @@ Server URI: <input class="draw-border" id="uri" size="47" value="ws://localhost:
                         req.setRequestHeader("method", "GET");
                     }
                     , type: 'POST',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                    , data: JSON.stringify(formData)
+                    , success: function (res) {
+                        alert(res)
+                    }
+                });
+                return false;
+            });
+            ////инфа об евенте
+            $("#eventinfobtn").click(function (e) {
+                e.preventDefault();
+                var formData = {
+                    "name": $("#eventname").val()
+                };
+                $.ajax({
+                    url: 'event',
+                    beforeSend: function (req) {
+                        req.setRequestHeader("method", "GET");
+                    }
+                    , type: 'POST',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                    , data: JSON.stringify(formData)
+                    , success: function (res) {
+                        alert(res)
+                    }
+                });
+                return false;
+            });
+            ////добавление hobby
+            $("#addeventhobbybtn").click(function (e) {
+                e.preventDefault();
+                var formData = {
+                    "event_id": parseInt($("#eventid").val()),
+                    "hobby": JSON.parse($("#eventhobby").val())
+                };
+                $.ajax({
+                    url: 'event/hobby'
+                    , type: 'POST',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                    , data: JSON.stringify(formData)
+                    , success: function (res) {
+                        alert(res)
+                    }
+                });
+                return false;
+            });
+            $("#deleventhobbybtn").click(function (e) {
+                e.preventDefault();
+                var formData = {
+                    "event_id": parseInt($("#eventid").val()),
+                    "hobby": JSON.parse($("#eventhobby").val())
+                };
+                $.ajax({
+                    url: 'event/hobby',
+                    type: 'DELETE',
                     xhrFields: {
                         withCredentials: true
                     }
@@ -187,7 +286,7 @@ Server URI: <input class="draw-border" id="uri" size="47" value="ws://localhost:
                 ws.close();
             };
             send.onclick = function () {
-                ws.send(userName.value + ": " + sendMessage.value);
+                ws.send(sendMessage.value);
                 sendMessage.value = "";
             };
             sendMessage.onkeyup = function (ev) {
