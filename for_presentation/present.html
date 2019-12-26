@@ -26,16 +26,16 @@
 <form method="post" id="loginform">
     <div class="row">
         <div class="col">
-            <input type="text" class="form-control" placeholder="Login" class="login">
+            <input type="text" class="form-control" placeholder="Login" id="onlylogin">
         </div>
         <div class="col">
-            <input type="password" class="form-control" placeholder="Password" class="password">
+            <input type="password" class="form-control" placeholder="Password" id="onlypassword">
         </div>
         <input class="btn btn-primary" type="button" id="loginbutton" value="Auth">
     </div>
 </form>
 <h1> Create Chat form</h1>
-<form method="post" id="chatcreateform">
+<form method="post" id="chatcreateform" class="border">
     <div class="row">
         <div class="col">
             <input type="text" class="form-control" placeholder="title" id="chattitle">
@@ -43,10 +43,14 @@
         <label for="memberlist">memberlist</label>
         <input type="text" class="form-control" value="[1,2,3]" id="memberlist">
         <label for="adminlist"></label>
-        <input type="text" class="form-control" value="[5]" id="adminlist">
+        <input type="text" class="form-control" value="[1]" id="adminlist">
+        <input type="text" class="form-control" value="" id="chateventid">
         <input class="btn btn-primary" type="button" id="chataddbutton" value="Auth">
     </div>
 </form>
+<label for="userinfo">Info about user enter login or user_id</label>
+<input type="text" id="userinfo" value="Andrey">
+<button type="button" id="userinfobtn" class="btn btn-success">Send</button>
 <h1> websocket example chat</h1>
 Server URI: <input class="draw-border" id="uri" size="47" value="ws://localhost:8080/chat?id="
                    style="margin-bottom: 5px;">
@@ -72,6 +76,7 @@ Server URI: <input class="draw-border" id="uri" size="47" value="ws://localhost:
 <script async>
     $(document).ready(function () {
         $(function () {
+            ///регистрация
             $("#regbutton").click(function (e) {
                 e.preventDefault();
                 var formData = {
@@ -90,45 +95,42 @@ Server URI: <input class="draw-border" id="uri" size="47" value="ws://localhost:
                 });
                 return false;
             });
+            ///логин система
             $("#loginbutton").click(function (e) {
                 e.preventDefault();
                 var formData = {
-                    "login": $("#login").val()
-                    , "password": $("#password").val()
+                    "login": $("#onlylogin").val()
+                    , "password": $("#onlypassword").val()
 
                 };
-                // let response = await fetch('/auth', {
-                //     method: 'GET',
-                //     body: JSON.stringify(formData)
-                // });
-                fetch("/auth", {
-                    method: 'GET',
-                    body: JSON.stringify(formData)
-                })
-                    .then(response => response.json())
-                    .then(result => console.log(result))
-                // $.ajax({
-                //     url: 'auth',
-                //     type: 'GET',
-                //     xhrFields: {
-                //         withCredentials: true
-                //     },
-                //     data: JSON.stringify(formData),
-                //     success: function (res) {
-                //         alert(res);
-                //     }
-                // });
+                $.ajax({
+                    url: 'auth',
+                    beforeSend: function (req) {
+                        req.setRequestHeader("method", "GET");
+                    },
+                    type: 'POST',
+                    data: JSON.stringify(formData),
+                    success: function (res) {
+                        alert(res);
+                    }
+                });
                 return false;
             });
-
+            ///создание чата
             $("#chataddbutton").click(function (e) {
                 e.preventDefault();
                 var formData = {
                     "title": $("#chattitle").val()
-                    , "members_list": $("#memberlist").val()
-                    , "admin_list": $("#adminlist").val()
+                    , "members_list": JSON.parse($("#memberlist").val())
+                    , "admin_list": JSON.parse($("#adminlist").val())
 
                 };
+                if ($("#chateventid").val() != "") formData = {
+                    "event_id": JSON.parse($("#chateventid").val()),
+                    "title": $("#chattitle").val()
+                    , "members_list": JSON.parse($("#memberlist").val())
+                    , "admin_list": JSON.parse($("#adminlist").val())
+                }
                 $.ajax({
                     url: 'chat'
                     , type: 'POST',
@@ -142,8 +144,29 @@ Server URI: <input class="draw-border" id="uri" size="47" value="ws://localhost:
                 });
                 return false;
             });
+            $("#userinfobtn").click(function (e) {
+                e.preventDefault();
+                var formData = {
+                    "login": $("#userinfo").val()
+                };
+                $.ajax({
+                    url: 'user',
+                    beforeSend: function (req) {
+                        req.setRequestHeader("method", "GET");
+                    }
+                    , type: 'POST',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                    , data: JSON.stringify(formData)
+                    , success: function (res) {
+                        alert(res)
+                    }
+                });
+                return false;
+            });
+            ///коннект на вебсокеты
             var ws = null;
-
             connect.onclick = function () {
                 ws = new WebSocket(uri.value);
                 ws.onopen = function (ev) {

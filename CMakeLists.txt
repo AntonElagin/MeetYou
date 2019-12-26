@@ -16,15 +16,15 @@ set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 
 
-set(BOOST_INCLUDEDIR "/home/anton/apps/boost_1_71_0")
-set(BOOST_LIBRARYDIR "/home/anton/apps/boost_1_71_0/stage/lib")
+#set(BOOST_INCLUDEDIR "/home/anton/apps/boost_1_71_0")
+#set(BOOST_LIBRARYDIR "/home/anton/apps/boost_1_71_0/stage/lib")
 set(Boost_NO_SYSTEM_PATHS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 set(BOOST_ALL_DYN_LINK OFF)
-#set(nlohmann_json_DIR "/home/andrey/CLionProjects/json")
-set(nlohmann_json_DIR "/home/anton/apps/json")
+set(nlohmann_json_DIR "/home/andrey/CLionProjects/json")
+#set(nlohmann_json_DIR "/home/anton/apps/json")
 include_directories(include)
 
 set(ALL_SOURCES
@@ -67,7 +67,6 @@ set(ALL_HEADERS
         ${INC_DIR}/IRunner.h
         ${INC_DIR}/IListener.h
         ${INC_DIR}/IHttpSession.h
-        ${INC_DIR}/IWebsocketSession.h
         ${INC_DIR}/AuthMiddleware.h
         ${INC_DIR}/IAuthMiddleware.h
         ${INC_DIR}/Queue.h
