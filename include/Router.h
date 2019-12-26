@@ -63,7 +63,7 @@ void Router::startRouting(Send &&send) {
     if (std::regex_search(target, iterator, reg)) {
       std::string path(iterator.str());
       std::cout << req.method_string() << std::endl;
-      if (req.method_string() == "GET") {
+      if (req.method_string() == "GET" ) {
         if (authGetMap.find(path) != authGetMap.end())
           if (authGetMap[path]) {
             if (!authFlag) return send(authException());
@@ -74,6 +74,11 @@ void Router::startRouting(Send &&send) {
                  (authFlag || path == "/auth" ||
                   authGetMap.find(path) == authGetMap.end())) {
         controller = getView(path);
+        try {
+          if (req.at("method") == "GET") {
+            return send(std::move(controller->get()));
+          }
+        } catch(...) { }
         return send(std::move(controller->post()));
       } else if (req.method_string() == "PUT" &&
                  (authFlag || authGetMap.find(path) == authGetMap.end())) {

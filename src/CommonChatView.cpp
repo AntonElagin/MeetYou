@@ -43,7 +43,9 @@ http::response<http::string_body> ViewChatCommon::post() {
                     throw std::invalid_argument("to create chat you must to be admin of this event");
                 }
             } else {
-                chatStmt.reset(conn->prepareStatement(
+
+                std::unique_ptr<sql::PreparedStatement> chatStmt(conn->prepareStatement(
+
                         "insert into chat (id,create_date, title,event_id) values (null,default ,?,null )"));///create chat
                 chatStmt->setString(1, title);
                 chatStmt->execute();
