@@ -78,7 +78,8 @@ http::response<http::string_body> ViewRecommend::get() {
         body["users"] += {{"login", respRes->getString(1)},
                           {"name", respRes->getString(2)},
                           {"surname", respRes->getString(3)},
-                          {"sex", respRes->getString(4)}};
+                          {"sex", respRes->getString(4)},
+                          {"%", vector[i].second}};
       }
     }
   }
