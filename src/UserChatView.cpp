@@ -6,6 +6,7 @@ http::response<http::string_body> ViewUserChat::post() {
     int chatid = -1, new_member_id, is_admin;
     json body;
     try {
+        if (userId < 0) throw std::invalid_argument("you must be logged");
         if (j.contains("new_member_id") && j.contains("chat_id") &&
             j.contains("is_admin")) {
             new_member_id = j.at("new_member_id");
@@ -46,6 +47,7 @@ http::response<http::string_body> ViewUserChat::delete_() {
     int chatid = -1, member_id;
     json body;
     try {
+        if (userId < 0) throw std::invalid_argument("you must be logged");
         if (j.contains("member_id") && j.contains("chat_id")) {
             member_id = j.at("member_id");
             chatid = j.at("chatid");
@@ -83,6 +85,7 @@ http::response<http::string_body> ViewUserChat::put() {  ///сделать ад�
     int chatid = -1, member_id, is_admin;
     json body;
     try {
+        if (userId < 0) throw std::invalid_argument("you must be logged");
         if (j.contains("member_id") && j.contains("chatid") &&
             j.contains("is_admin")) {
             member_id = j.at("member_id");

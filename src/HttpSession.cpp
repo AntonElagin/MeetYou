@@ -93,15 +93,28 @@ void HttpSession::onRead(beast::error_code ec, std::size_t bytes_transferred) {
             ResponseCreator resp(body, 1);
             queue(std::move(resp.get_resp()));
         }
-        catch (const char* e) {
+        catch (const char *e) {
             json body({"Error", e});
             ResponseCreator resp(body, 1);
             queue(std::move(resp.get_resp()));
         }
         return;
     }
+    if (parser->get().target().back() == '/') {
+        http::file_body::value_type body;
+        std::string path = "../for_presentation/present.html";
+        body.open(path.c_str(), beast::file_mode::scan, ec);
+        http::response<http::file_body> res{
+                std::piecewise_construct,
+                std::make_tuple(std::move(body)),
+                std::make_tuple(http::status::ok, parser->get().version())};
+        res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+        res.set(http::field::content_type, "text/html");
+        res.keep_alive(parser->get().keep_alive());
+        res.prepare_payload();
+        queue(std::move(res));
+    }
     // Отправляем ответ
-
     Router router(parser->release(), stream.socket().remote_endpoint().address().to_string());
     router.startRouting(queue);
 
