@@ -51,7 +51,8 @@ set(ALL_SOURCES
         ${SRC_DIR}/MessageChatView.cpp
         ${SRC_DIR}/UserChatView.cpp
         ${SRC_DIR}/SharedState.cpp
-        ${SRC_DIR}/ViewUserFolList.cpp)
+        ${SRC_DIR}/ViewUserFolList.cpp
+        ${SRC_DIR}/ViewRecommend.cpp)
 
 
 set(ALL_HEADERS
@@ -67,7 +68,7 @@ set(ALL_HEADERS
         ${INC_DIR}/IRunner.h
         ${INC_DIR}/IListener.h
         ${INC_DIR}/IHttpSession.h
-        ${INC_DIR}/IWebsocketSession.h
+#        ${INC_DIR}/IWebsocketSession.h
         ${INC_DIR}/AuthMiddleware.h
         ${INC_DIR}/IAuthMiddleware.h
         ${INC_DIR}/Queue.h
@@ -84,7 +85,8 @@ set(ALL_HEADERS
         ${INC_DIR}/CommonChatView.h
         ${INC_DIR}/MessageChatView.h
         ${INC_DIR}/UserChatView.h
-        ${INC_DIR}/SharedState.h)
+        ${INC_DIR}/SharedState.h
+        ${INC_DIR}/ViewRecommend.h)
 
 
 set(TEST_FILES
@@ -145,6 +147,7 @@ target_link_libraries(client pthread)
 add_executable(runRecommendation recommendation/main.cpp
         include/Md5.h
         src/Md5.cpp)
+
 target_link_libraries(runRecommendation ${Boost_LIBRARIES} pthread
         ${mysqlcppconn8_INCLUDE_DIRS}
         ${mysqlcppconn8_LIBRARIES}
