@@ -135,7 +135,7 @@ http::response<http::string_body> ViewRegistration::get() {
     }
     return templateReturn(400, "Invalid user data");
   }
-  return templateReturn(400, "JSON error");
+  return templateReturn(400, "Invalid params or psrams count");
 }
 
 http::response<http::string_body> ViewRegistration::put() {

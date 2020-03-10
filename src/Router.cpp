@@ -1,12 +1,28 @@
 #include "Router.h"
 #include <regex>
+#include <utility>
 #include "CommonChatView.h"
 #include "MessageChatView.h"
 #include "UserChatView.h"
+#include "ViewUserFolList.h"
+#include "ViewRecommend.h"
 
-Router::Router(http::request<http::string_body> req, const std::string &ip)
-    : req(std::move(req)), userId(-1), ip(ip) {
-  authGetMap = {{"/auth", false}, {"/user", false}, {"/event", true}};
+Router::Router(http::request<http::string_body> req, std::string ip)
+    : req(std::move(req)), userId(-1), ip(std::move(ip)) {
+  authGetMap = {{"/auth",                false},
+                {"/user",                false},
+                {"/event",               true},
+                {"/chat/message",        true},
+                {"/user/hobby",          true},
+                {"/event/hobby",         true},
+                {"/user/follow",         true},
+                {"/event/follow",        true},
+                {"/user/follow",         true},
+                {"/event/follow/list",   false},
+                {"/user/follow/own",     true},
+                {"/chat/member_list",    true},
+                {"/event/members_count", true},
+                {"/search",              true}};
   driver = get_driver_instance();
   std::shared_ptr<sql::Connection> con(
       driver->connect("tcp://127.0.0.1:3306", "root", "12A02El99"));
@@ -20,6 +36,10 @@ std::unique_ptr<View> Router::getView(const std::string &path) {
     return std::unique_ptr<View>(new ViewRegistration(req, conn, userId, ip));
   else if (path == "/user")
     return std::unique_ptr<View>(new ViewUser(req, conn, userId));
+  else if (path == "/search")
+    return std::unique_ptr<View>(new ViewRecommend(req, conn, userId));
+  else if (path == "/chat")
+    return std::unique_ptr<View>(new ViewChatCommon(req, conn, userId));
   else if (path == "/event/hobby")
     return std::unique_ptr<View>(new ViewEventHobby(req, conn, userId));
   else if (path == "/user/hobby")
@@ -28,6 +48,8 @@ std::unique_ptr<View> Router::getView(const std::string &path) {
     return std::unique_ptr<View>(new ViewEvent(req, conn, userId));
   else if (path == "/user/follow")
     return std::unique_ptr<View>(new ViewUserFollow(req, conn, userId));
+  else if (path == "/user/follow/own")
+    return std::unique_ptr<View>(new ViewUserFolList(req, conn, userId));
   else if (path == "/event/follow")
     return std::unique_ptr<View>(new ViewEventFollow(req, conn, userId));
   else if (path == "/chat/message")

@@ -1,13 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 project(techProject)
 
-# флаги
-set(CMAKE_CXX_FLAGS "-O0 -fprofile-arcs -ftest-coverage")
-set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
-SET(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
-SET(CMAKE_C_FLAGS "-g -O0 -Wall -W -fprofile-arcs -ftest-coverage")
-SET(CMAKE_EXE_LINKER_FLAGS "-fprofile-arcs -ftest-coverage")
-#
+
+#set(CMAKE_CXX_FLAGS "-O0 -fprofile-arcs -ftest-coverage")
+#set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
+#SET(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
+#SET(CMAKE_C_FLAGS "-g -O0 -Wall -W -fprofile-arcs -ftest-coverage")
+#SET(CMAKE_EXE_LINKER_FLAGS "-fprofile-arcs -ftest-coverage")
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -24,6 +23,7 @@ set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 set(BOOST_ALL_DYN_LINK OFF)
+#set(nlohmann_json_DIR "/home/andrey/CLionProjects/json")
 set(nlohmann_json_DIR "/home/anton/apps/json")
 include_directories(include)
 
@@ -44,7 +44,16 @@ set(ALL_SOURCES
         ${SRC_DIR}/ViewEvent.cpp
         ${SRC_DIR}/ViewEventFollow.cpp
         ${SRC_DIR}/ViewUserFollow.cpp
-        ${SRC_DIR}/ViewUserHobby.cpp src/ViewEventHobby.cpp src/ViewFindEvent.cpp)
+        ${SRC_DIR}/ViewUserHobby.cpp
+        ${SRC_DIR}/ViewEventHobby.cpp
+        ${SRC_DIR}/ViewFindEvent.cpp
+        ${SRC_DIR}/CommonChatView.cpp
+        ${SRC_DIR}/MessageChatView.cpp
+        ${SRC_DIR}/UserChatView.cpp
+        ${SRC_DIR}/SharedState.cpp
+        ${SRC_DIR}/ViewUserFolList.cpp
+        ${SRC_DIR}/ViewRecommend.cpp)
+
 
 set(ALL_HEADERS
         ${INC_DIR}/Router.h
@@ -59,7 +68,6 @@ set(ALL_HEADERS
         ${INC_DIR}/IRunner.h
         ${INC_DIR}/IListener.h
         ${INC_DIR}/IHttpSession.h
-        ${INC_DIR}/IWebsocketSession.h
         ${INC_DIR}/AuthMiddleware.h
         ${INC_DIR}/IAuthMiddleware.h
         ${INC_DIR}/Queue.h
@@ -69,7 +77,16 @@ set(ALL_HEADERS
         ${INC_DIR}/ViewEvent.h
         ${INC_DIR}/ViewEventFollow.h
         ${INC_DIR}/ViewUserFollow.h
-        ${INC_DIR}/ViewUserHobby.h include/ViewEventHobby.h include/ViewFindEvent.h)
+        ${INC_DIR}/ViewUserHobby.h
+        ${INC_DIR}/ViewEventHobby.h
+        ${INC_DIR}/ViewFindEvent.h
+        ${INC_DIR}/ViewUserFolList.h
+        ${INC_DIR}/CommonChatView.h
+        ${INC_DIR}/MessageChatView.h
+        ${INC_DIR}/UserChatView.h
+        ${INC_DIR}/SharedState.h
+        ${INC_DIR}/ViewRecommend.h)
+
 
 set(TEST_FILES
         #        ${TEST_DIR}/tests.cpp
@@ -105,6 +122,7 @@ target_link_libraries(runServer ${Boost_LIBRARIES} pthread
 set(GTest_DIR "/home/anton/apps/googletest")
 find_package(GTest REQUIRED)
 
+
 include_directories(${GTEST_INCLUDE_DIRS})
 
 include_directories(SYSTEM ${GMOCK_DIR}/include ${GMOCK_DIR}/gtest/include)
@@ -121,14 +139,17 @@ target_link_libraries(runTests
         ${LIBMYSQLCLIENT_INCLUDE_DIRS}
         ${LIBMYSQLCLIENT_LIBRARIES}
         ${nlohmann_json}
-        nlohmann_json::nlohmann_json
-        )
-set(SOURCE nlohmann/json.hpp
-        src/CommonChatView.cpp src/MessageChatView.cpp src/UserChatView.cpp src/ResponseCreater.cpp include/View.h)
+        nlohmann_json::nlohmann_json)
+add_executable(client some_clients/client.cpp)
+target_link_libraries(client pthread)
 
-#include_directories(include)
-#include_directories(nlohmann)
-#link_libraries(mysqlcppconn Threads::Threads ${Boost_LIBRARIES})
-#add_executable(Test )
-#target_include_directories(Test PUBLIC ${GTEST_INCLUDE_DIRS})
-#target_link_libraries(Test PUBLIC ${GTEST_LIBRARIES} pthread)
+add_executable(runRecommendation recommendation/main.cpp
+        include/Md5.h
+        src/Md5.cpp)
+
+target_link_libraries(runRecommendation ${Boost_LIBRARIES} pthread
+        ${mysqlcppconn8_INCLUDE_DIRS}
+        ${mysqlcppconn8_LIBRARIES}
+        ${MYSQL_LIB}
+        ${nlohmann_json}
+        nlohmann_json::nlohmann_json)

@@ -8,6 +8,7 @@
 #include <set>
 #include <unordered_map>
 #include <utility>
+#include <regex>
 #include "AuthMiddleware.h"
 #include "View.h"
 #include "ViewEvent.h"
@@ -19,7 +20,9 @@
 #include "ViewUser.h"
 #include "ViewUserFollow.h"
 #include "ViewUserHobby.h"
-
+#include "CommonChatView.h"
+#include "MessageChatView.h"
+#include "UserChatView.h"
 namespace http = boost::beast::http;
 
 class Router {
@@ -41,7 +44,7 @@ class Router {
   template <class Send>
   void startRouting(Send &&send);
 
-  explicit Router(http::request<http::string_body> req, const std::string &ip);
+  explicit Router(http::request<http::string_body> req, std::string ip);
 };
 
 template <class Send>
@@ -52,13 +55,15 @@ void Router::startRouting(Send &&send) {
 
     std::unique_ptr<View> controller;
     AuthMiddleware authMiddleware(conn, req, ip);
+
     bool authFlag = authMiddleware.isAuth();
     userId = authMiddleware.getUserId();
     std::string target = req.target().to_string();
+
     if (std::regex_search(target, iterator, reg)) {
       std::string path(iterator.str());
       std::cout << req.method_string() << std::endl;
-      if (req.method_string() == "GET") {
+      if (req.method_string() == "GET" ) {
         if (authGetMap.find(path) != authGetMap.end())
           if (authGetMap[path]) {
             if (!authFlag) return send(authException());
@@ -69,6 +74,11 @@ void Router::startRouting(Send &&send) {
                  (authFlag || path == "/auth" ||
                   authGetMap.find(path) == authGetMap.end())) {
         controller = getView(path);
+        try {
+          if (req.at("method") == "GET") {
+            return send(std::move(controller->get()));
+          }
+        } catch(...) { }
         return send(std::move(controller->post()));
       } else if (req.method_string() == "PUT" &&
                  (authFlag || authGetMap.find(path) == authGetMap.end())) {
@@ -90,7 +100,7 @@ void Router::startRouting(Send &&send) {
     res.result(500);
     nlohmann::json respBody;
     respBody["status"] = 500;
-    respBody["message"] = "server error (routing)";
+    respBody["message"] = "server error";
     res.body() = respBody.dump();
     res.set(http::field::content_length, respBody.dump().length());
     send(std::move(res));

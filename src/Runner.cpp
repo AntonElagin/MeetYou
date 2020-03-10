@@ -10,7 +10,7 @@ void Runner::run() {
   boost::asio::io_context ioc{threads};
 
   // Создаем и запускаем порт прослушивания
-  std::make_shared<Listener>(ioc, tcp::endpoint{address, port})->run();
+  std::make_shared<Listener>(ioc, tcp::endpoint{address, port},boost::make_shared<SharedState>())->run();
 
   // Захват SIGINT и SIGTERM для выполнения чистого завершения работы
   boost::asio::signal_set signals(ioc, SIGINT, SIGTERM);

@@ -1,10 +1,14 @@
 #include "AuthMiddleware.h"
 
 #include <utility>
+#include <boost/beast/http/field.hpp>
+#include <boost/beast/http/impl/field.ipp>
 
+namespace http = boost::beast::http;
 bool AuthMiddleware::isAuth() {
   try {
-    std::string c = req.at("Cookie").to_string(), token;
+    auto b = req.at(http::field::cookie);
+    std::string c = b.to_string(), token;
     std::smatch iterator;
     std::regex rex("access_token=[^;]+");
 

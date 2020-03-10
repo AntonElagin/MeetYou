@@ -1,5 +1,6 @@
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <cppconn/driver.h>
+#include <boost/beast/http.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/config.hpp>
