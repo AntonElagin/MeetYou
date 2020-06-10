@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MeetYou</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+<body class="container">
+<h1 class="alert alert-success">MeetYou</h1>
+<form method="post" id="regform">
+    <div class="row">
+        <div class="col">
+            <input type="text" class="form-control" placeholder="Login" id="login">
+        </div>
+        <div class="col">
+            <input type="password" class="form-control" placeholder="Password" id="password">
+        </div>
+        <div class="col">
+            <input type="email" class="form-control" placeholder="email" id="email">
+        </div>
+        <input class="btn btn-primary" type="button" id="regbutton" value="Auth">
+    </div>
+</form>
+<hr>
+<form method="post" id="loginform">
+    <div class="row">
+        <div class="col">
+            <input type="text" class="form-control" placeholder="Login" id="onlylogin">
+        </div>
+        <div class="col">
+            <input type="password" class="form-control" placeholder="Password" id="onlypassword">
+        </div>
+        <input class="btn btn-primary" type="button" id="loginbutton" value="Auth">
+    </div>
+</form>
+<h1> Create Chat form</h1>
+<form method="post" id="chatcreateform" class="border">
+    <div class="row">
+        <div class="col">
+            <input type="text" class="form-control" placeholder="title" id="chattitle">
+        </div>
+        <label for="memberlist">memberlist</label>
+        <input type="text" class="form-control" value="[1,2,3]" id="memberlist">
+        <label for="adminlist"></label>
+        <input type="text" class="form-control" value="[1]" id="adminlist">
+        <input type="text" class="form-control" value="" id="chateventid">
+        <input class="btn btn-primary" type="button" id="chataddbutton" value="Auth">
+    </div>
+</form>
+<hr>
+Search user for login
+<input type="text" id="userinfo" value="Andrey">
+<button type="button" id="userinfobtn" class="btn btn-success">Send</button>
+<br>
+<label for="eventname">Enter event name</label>
+<input type="text" id="eventname">
+<button type="button" id="eventinfobtn" class="btn btn-success">Send</button>
+<br>
+<form action="/event/hobby">
+    <label for="eventname">Enter event id</label>
+    <input type="text" id="eventid" value="1">
+    <input type="text" id="eventhobby" value='[ "sky", "skate", "sing", "eat" ]'>
+    <button type="button" id="addeventhobbybtn" class="btn btn-success">Add hobby</button>
+    <button type="button" id="deleventhobbybtn" class="btn btn-success">Del hobby</button>
+</form>
+<h3>Search on title and description</h3>
+<form action="/event/find">
+    <label for="eventname">Enter keyword</label>
+    <input type="text" id="eventkey" value='sky'>
+    <button type="button" id="keyfindbtn" class="btn btn-success">Find</button>
+</form>
+<h1> websocket example chat</h1>
+Server URI: <input class="draw-border" id="uri" size="47" value="ws://localhost:8080/chat?id="
+                   style="margin-bottom: 5px;">
+<button class="btn btn-success" id="connect">Connect</button>
+<button class="btn btn-danger mb-2" id="disconnect">Disconnect</button>
+
+<pre id="messages" style="width: 600px; height: 400px; border: solid 1px #cccccc; margin-bottom: 5px;"></pre>
+
+<div style="margin-bottom: 5px;">
+    Message<br>
+    <input class="draw-border" id="sendMessage" size="74" value="">
+    <button class="echo-button" id="send">Send</button>
+</div>
+<script src="https://code.jquery.com/jquery-3.4.1.js"
+        integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+<script async>
+    $(document).ready(function () {
+        $(function () {
+            ///регистрация
+            $("#regbutton").click(function (e) {
+                e.preventDefault();
+                var formData = {
+                    "login": $("#login").val()
+                    , "password": $("#password").val()
+                    , "email": $("#email").val()
+                };
+                $.ajax({
+                    url: 'auth'
+                    , type: 'POST'
+                    , data: JSON.stringify(formData)
+                    , success: function (res) {
+                        alert(res);
+                    }
+                });
+                return false;
+            });
+            ///поиск по ключевому слову
+            $("#keyfindbtn").click(function (e) {
+                e.preventDefault();
+                var formData = {
+                    "key": $("#eventkey").val()
+                };
+                $.ajax({
+                    url: 'event/find',
+                    beforeSend: function (req) {
+                        req.setRequestHeader("method", "GET");
+                    },
+                    type: 'POST',
+                    data: JSON.stringify(formData),
+                    success: function (res) {
+                        alert(res);
+                    }
+                });
+                return false;
+            });
+            ///логин система
+            $("#loginbutton").click(function (e) {
+                e.preventDefault();
+                var formData = {
+                    "login": $("#onlylogin").val()
+                    , "password": $("#onlypassword").val()
+
+                };
+                $.ajax({
+                    url: 'auth',
+                    beforeSend: function (req) {
+                        req.setRequestHeader("method", "GET");
+                    },
+                    type: 'POST',
+                    data: JSON.stringify(formData),
+                    success: function (res) {
+                        alert(res);
+                    }
+                });
+                return false;
+            });
+            ///создание чата
+            $("#chataddbutton").click(function (e) {
+                e.preventDefault();
+                var formData = {
+                    "title": $("#chattitle").val()
+                    , "members_list": JSON.parse($("#memberlist").val())
+                    , "admin_list": JSON.parse($("#adminlist").val())
+
+                };
+                if ($("#chateventid").val() != "") formData = {
+                    "event_id": JSON.parse($("#chateventid").val()),
+                    "title": $("#chattitle").val()
+                    , "members_list": JSON.parse($("#memberlist").val())
+                    , "admin_list": JSON.parse($("#adminlist").val())
+                }
+                $.ajax({
+                    url: 'chat'
+                    , type: 'POST',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                    , data: JSON.stringify(formData)
+                    , success: function (res) {
+                        console.log()
+                    }
+                });
+                return false;
+            });
+            /// поиск инфы о юзере
+            $("#userinfobtn").click(function (e) {
+                e.preventDefault();
+                var formData = {
+                    "login": $("#userinfo").val()
+                };
+                $.ajax({
+                    url: 'user',
+                    beforeSend: function (req) {
+                        req.setRequestHeader("method", "GET");
+                    }
+                    , type: 'POST',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                    , data: JSON.stringify(formData)
+                    , success: function (res) {
+                        alert(res)
+                    }
+                });
+                return false;
+            });
+            ////инфа об евенте
+            $("#eventinfobtn").click(function (e) {
+                e.preventDefault();
+                var formData = {
+                    "name": $("#eventname").val()
+                };
+                $.ajax({
+                    url: 'event',
+                    beforeSend: function (req) {
+                        req.setRequestHeader("method", "GET");
+                    }
+                    , type: 'POST',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                    , data: JSON.stringify(formData)
+                    , success: function (res) {
+                        alert(res)
+                    }
+                });
+                return false;
+            });
+            ////добавление hobby
+            $("#addeventhobbybtn").click(function (e) {
+                e.preventDefault();
+                var formData = {
+                    "event_id": parseInt($("#eventid").val()),
+                    "hobby": JSON.parse($("#eventhobby").val())
+                };
+                $.ajax({
+                    url: 'event/hobby'
+                    , type: 'POST',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                    , data: JSON.stringify(formData)
+                    , success: function (res) {
+                        alert(res)
+                    }
+                });
+                return false;
+            });
+            $("#deleventhobbybtn").click(function (e) {
+                e.preventDefault();
+                var formData = {
+                    "event_id": parseInt($("#eventid").val()),
+                    "hobby": JSON.parse($("#eventhobby").val())
+                };
+                $.ajax({
+                    url: 'event/hobby',
+                    type: 'DELETE',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                    , data: JSON.stringify(formData)
+                    , success: function (res) {
+                        alert(res)
+                    }
+                });
+                return false;
+            });
+            ///коннект на вебсокеты
+            var ws = null;
+            connect.onclick = function () {
+                ws = new WebSocket(uri.value);
+                ws.onopen = function (ev) {
+                    messages.innerText += "[connection opened]\n";
+                };
+                ws.onclose = function (ev) {
+                    messages.innerText += "[connection closed]\n";
+                };
+                ws.onmessage = function (ev) {
+                    messages.innerText += ev.data + "\n";
+                };
+                ws.onerror = function (ev) {
+                    messages.innerText += "[error]\n";
+                    console.log(ev);
+                };
+            };
+            disconnect.onclick = function () {
+                ws.close();
+            };
+            send.onclick = function () {
+                ws.send(sendMessage.value);
+                sendMessage.value = "";
+            };
+            sendMessage.onkeyup = function (ev) {
+                ev.preventDefault();
+                if (event.keyCode === 13) {
+                    send.click();
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>
